@@ -490,7 +490,7 @@
 <template id="opsT-tr"><div class="op"><h3>Training progress</h3>
             <canvas id="opsTrain" class="cc"></canvas><div class="bar2"><i id="opsTrBar"></i></div><div class="nnnote" id="opsTrInfo">idle</div></div></template>
 <template id="opsT-at"><div class="op"><h3>Attitude <span style="text-transform:none;letter-spacing:.04em;font-weight:500;color:#5f7699">2-D: tilt only, no roll or yaw</span></h3>
-            <canvas id="opsAtt" style="flex:1 1 auto;min-height:120px"></canvas><div class="nnnote" id="opsAttTxt"></div></div></template>
+            <div class="kvg" id="opsAtK" style="--kc:2;margin-bottom:6px"></div><canvas id="opsAtt" class="cc" style="min-height:90px"></canvas><div id="opsAtG" style="margin-top:6px"></div><div class="sub3">tilt and spin, last 10 s</div><canvas id="opsAtH" style="height:78px"></canvas><div class="cl" id="opsAtHL"></div><div class="nnnote" id="opsAttTxt"></div></div></template>
 <template id="opsT-sq"><div class="op"><h3>Landing sequence</h3><div class="sq" id="opsSeq"></div><table class="pht" id="opsSeqT"></table></div></template>
 <template id="opsT-sc"><div class="op"><h3>Landing score</h3>
             <div class="scr"><div class="ring"><svg viewBox="0 0 120 120"><circle class="rg-bg" cx="60" cy="60" r="50"/><circle class="rg-fg" id="opsScRing" cx="60" cy="60" r="50" transform="rotate(-90 60 60)" stroke-dasharray="314.16" stroke-dashoffset="314.16"/></svg><div class="ring-c"><b id="opsScVal">&mdash;</b><span>of 100</span></div></div>
@@ -1638,20 +1638,34 @@ function actAt(s) {                                // the network's numbers for 
   return { a, t, T, ni, n1, n2, no, x: row(a.x, ni), h1, h2, m: row(a.m, no), exec: a.a ? row(a.a, no) : null, v: a.v[t], draw: Object.assign({}, dn, { h1: dn.I1.map(i => h1[i]), h2: dn.I2.map(i => h2[i]) }) };
 }
 
+function kthLargest(a, k) {                       // the k-th largest value (1 = the largest), by selection on a copy instead of sorting everything
+  const v = Float32Array.from(a), target = Math.max(0, v.length - k); let lo = 0, hi = v.length - 1;
+  while (lo < hi) {
+    const p = v[(lo + hi) >> 1]; let i = lo, j = hi;
+    while (i <= j) { while (v[i] < p) i++; while (v[j] > p) j--; if (i <= j) { const t = v[i]; v[i] = v[j]; v[j] = t; i++; j--; } }
+    if (target <= j) hi = j; else if (target >= i) lo = i; else break;
+  }
+  return v[target];
+}
+const EDGE_LEVELS = 12;                           // lines are drawn in batches: two colours x this many strength levels
 function edges(ctx, lw, w, nIn, nOut, aIn, xa, xb, ysA, ysB, keep) {      // draw the `keep` strongest signals w[j][i] * a[i]
-  const c = new Float32Array(nIn * nOut), ab = new Float32Array(nIn * nOut);
-  for (let j = 0; j < nOut; j++) for (let i = 0; i < nIn; i++) { const v = w[j * nIn + i] * aIn[i]; c[j * nIn + i] = v; ab[j * nIn + i] = Math.abs(v); }
-  const sorted = Float32Array.from(ab).sort(), mx = sorted[sorted.length - 1] || 1, thr = sorted[Math.max(0, sorted.length - keep)];
-  for (let j = 0; j < nOut; j++) for (let i = 0; i < nIn; i++) {
-    const k = j * nIn + i; if (ab[k] < thr || ab[k] < 1e-4) continue;
-    const q = ab[k] / mx, col = c[k] >= 0 ? POS : NEG;
-    ctx.strokeStyle = `rgba(${col[0]},${col[1]},${col[2]},${0.10 + 0.75 * q})`; ctx.lineWidth = lw * (0.6 + 2.0 * q);
-    ctx.beginPath(); ctx.moveTo(xa, ysA[i]); ctx.lineTo(xb, ysB[j]); ctx.stroke();
+  const N = nIn * nOut, c = new Float32Array(N), ab = new Float32Array(N); let mx = 0;
+  for (let j = 0; j < nOut; j++) for (let i = 0; i < nIn; i++) { const k = j * nIn + i, v = w[k] * aIn[i], a = v < 0 ? -v : v; c[k] = v; ab[k] = a; if (a > mx) mx = a; }
+  if (!N) return; mx = mx || 1;
+  const thr = kthLargest(ab, keep), B = EDGE_LEVELS, groups = [];
+  for (let k = 0; k < N; k++) { if (ab[k] < thr || ab[k] < 1e-4) continue; const g = (c[k] >= 0 ? 0 : B) + Math.min(B - 1, Math.floor(ab[k] / mx * B)); (groups[g] || (groups[g] = [])).push(k); }
+  for (let g = 0; g < 2 * B; g++) {
+    const list = groups[g]; if (!list) continue;
+    const q = ((g % B) + 0.5) / B, col = g < B ? POS : NEG;
+    ctx.strokeStyle = `rgba(${col[0]},${col[1]},${col[2]},${0.10 + 0.75 * q})`; ctx.lineWidth = lw * (0.6 + 2.0 * q); ctx.beginPath();
+    for (const k of list) { const j = (k / nIn) | 0; ctx.moveTo(xa, ysA[k - j * nIn]); ctx.lineTo(xb, ysB[j]); }
+    ctx.stroke();
   }
 }
 
 function drawBrain() {
-  const s = slots[brainSel];
+  const s = slots[brainSel], n0 = actAt(s), key = n0 ? s.k + ':' + s.ep.id + ':' + n0.t : null;
+  if (key && bg._key === key) return; bg._key = key;                // nothing new to draw
   bg.clearRect(0, 0, BW, BH); bg.fillStyle = '#070a13'; bg.fillRect(0, 0, BW, BH);
   bg.font = '600 12px system-ui'; bg.textAlign = 'center'; bg.fillStyle = '#7a84a8';
   ['what it senses', 'layer 1', 'layer 2', 'decision'].forEach((t, i) => bg.fillText(t, COLX[i], 30));
@@ -1738,6 +1752,7 @@ function drawMini() {
   const s = slots[brainSel], n = actAt(s);
   setPending('mini', !n, n || !s || !s.ep || s.noAct !== s.ep.id ? 'PENDING DATA' : 'NO NEURAL DATA');
   if (!n) return;                                                  // keep the last picture
+  const key = s.k + ':' + s.ep.id + ':' + n.t; if (mg._key === key) return; mg._key = key;   // nothing new to draw
   mg.clearRect(0, 0, MW, MH);
   const d = n.draw, xin = n.x.map(v => Math.tanh(v));
   edges(mg, 0.55, d.w1, n.ni, d.n1, xin, MCX[0], MCX[1], MYN(n.ni), MYN(d.n1), 30);
@@ -2028,24 +2043,25 @@ function camRig(fr) {                                                         //
 const vnoise = (x, y) => { const i = Math.floor(x), j = Math.floor(y), fx = x - i, fy = y - j, sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy), a = hash2(i, j), b = hash2(i + 1, j), c = hash2(i, j + 1), d = hash2(i + 1, j + 1); return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy; };
 const _px = [0, 0, 0];
 function shipPixel(lx, lz, mpp, hp) {                                           // the colour of the drone ship's deck at (lx, lz) metres from its centre; features never get thinner than a pixel
-  const W2 = 26, w = Math.max(0.7, mpp * 1.3);
+  const W2 = 26, w = Math.max(0.7, mpp * 1.3), edge = Math.max(0.9, mpp);       // runs once per deck pixel: boxes tested inline, the angle worked out only when needed
   let r = 56, g = 65, b = 74;
   const n = hash2(Math.floor(lx * 2), Math.floor(lz * 2)); r += (n - 0.5) * 6; g += (n - 0.5) * 6; b += (n - 0.5) * 6;
-  const inb = (x0, x1, z0, z1) => lx >= x0 && lx <= x1 && lz >= z0 && lz <= z1;
-  if (hp - Math.abs(lx) < Math.max(0.9, mpp) || W2 - Math.abs(lz) < Math.max(0.9, mpp)) { r = 201; g = 162; b = 39; }                                                  // yellow trim
-  else if (inb(hp - 34, hp - 25, -23, -9)) { r = 201; g = 162; b = 39; } else if (inb(hp - 25, hp - 16, -23, -9)) { r = 225; g = 229; b = 233; }                         // containers
-  else if (inb(hp - 13, hp - 6, -19, -3)) { if (Math.hypot(lx - (hp - 9.5), lz + 11) < 2.2) { r = 242; g = 245; b = 248; } else { r = 225; g = 229; b = 233; } }       // bridge and radome
-  else if (inb(hp - 16, hp - 4, -24, 5)) { r = 43; g = 50; b = 57; }                                                                                                 // main block
-  else if (inb(-hp + 5, -hp + 14, 10, 19)) { r = 201; g = 122; b = 43; } else if (Math.hypot(lx + hp - 20, lz + 12) < 1.8) { r = 242; g = 245; b = 248; }
+  if (hp - Math.abs(lx) < edge || W2 - Math.abs(lz) < edge) { r = 201; g = 162; b = 39; }                                                                              // yellow trim
+  else if (lx >= hp - 34 && lx <= hp - 25 && lz >= -23 && lz <= -9) { r = 201; g = 162; b = 39; } else if (lx >= hp - 25 && lx <= hp - 16 && lz >= -23 && lz <= -9) { r = 225; g = 229; b = 233; }   // containers
+  else if (lx >= hp - 13 && lx <= hp - 6 && lz >= -19 && lz <= -3) { const ax = lx - (hp - 9.5), az = lz + 11; if (Math.sqrt(ax * ax + az * az) < 2.2) { r = 242; g = 245; b = 248; } else { r = 225; g = 229; b = 233; } }   // bridge and radome
+  else if (lx >= hp - 16 && lx <= hp - 4 && lz >= -24 && lz <= 5) { r = 43; g = 50; b = 57; }                                                                       // main block
+  else if (lx >= -hp + 5 && lx <= -hp + 14 && lz >= 10 && lz <= 19) { r = 201; g = 122; b = 43; }
+  else { const ax = lx + hp - 20, az = lz + 12; if (Math.sqrt(ax * ax + az * az) < 1.8) { r = 242; g = 245; b = 248; }
   else {
-    const rr = Math.hypot(lx, lz), ang = Math.atan2(lz, lx);                                                                                                         // the landing circle: white ring, yellow arcs, white X
+    const rr = Math.sqrt(lx * lx + lz * lz);                                                                                                                         // the landing circle: white ring, yellow arcs, white X
     if (Math.abs(rr - 10) < w) { r = 242; g = 245; b = 248; }
-    else if (Math.abs(rr - 8.4) < w && (Math.abs(ang) < 0.9 || Math.abs(ang) > Math.PI - 0.9)) { r = 242; g = 194; b = 48; }
-    else if (rr < 3.4 && (Math.abs(lx - lz) < w * 0.9 || Math.abs(lx + lz) < w * 0.9)) { r = 242; g = 245; b = 248; }
-  }
+    else { let arc = false; if (Math.abs(rr - 8.4) < w) { const A = Math.abs(Math.atan2(lz, lx)); arc = A < 0.9 || A > Math.PI - 0.9; }
+    if (arc) { r = 242; g = 194; b = 48; }
+    else if (rr < 3.4 && (Math.abs(lx - lz) < w * 0.9 || Math.abs(lx + lz) < w * 0.9)) { r = 242; g = 245; b = 248; } }
+  } }
   _px[0] = r; _px[1] = g; _px[2] = b;
 }
-function camScene(rig, t0) {                                                     // ray-trace the sea and the ships from the camera into the small scene image
+function camSceneCPU(rig, t0) {                                                  // ray-trace the sea and the ships from the camera into the small scene image (the fallback for camSceneGL below)
   const d = sceneD.data, FLs = (SW / 2) / Math.tan(CAMV.fov * Math.PI / 360), { C, f, u, r } = rig, hp = (PAD[1] - PAD[0]) / 2;
   const ws = t0 * 0.6, Cy = Math.max(C[1], 1);
   for (let j = 0; j < SH; j++) {
@@ -2080,6 +2096,88 @@ function camScene(rig, t0) {                                                    
   }
   sceneG.putImageData(sceneD, 0, 0);
 }
+// ---- the same picture on the graphics card: a WebGL2 fragment shader runs camSceneCPU's per-pixel code (and shipPixel's) once per pixel, all pixels at once.
+// The CPU version stays as the fallback: no WebGL2, a shader that will not compile, a lost context, or ?cpucam in the address.
+const CAM_GL = (() => {
+  if (new URLSearchParams(location.search).has('cpucam')) return null;
+  try {
+    const c = document.createElement('canvas'); c.width = SW; c.height = SH;
+    const gl = c.getContext('webgl2', { preserveDrawingBuffer: true, antialias: false, depth: false, stencil: false, alpha: false });
+    if (!gl) return null;
+    const fs = `#version 300 es
+precision highp float; precision highp int;
+uniform vec2 uSize; uniform float uFL, uShift, uHp, uWs, uCy; uniform vec3 uC, uF, uU, uR; uniform float uPads[4]; uniform int uNPads;
+out vec4 outC;
+const vec3 WHITE = vec3(242.0, 245.0, 248.0), TRIM = vec3(201.0, 162.0, 39.0), BOX = vec3(225.0, 229.0, 233.0), SKY = vec3(172.0, 197.0, 212.0);
+float hash2(int i, int j) { uint h = uint(i) * 374761393u + uint(j) * 668265263u; h = (h ^ (h >> 13u)) * 1274126177u; return float(h ^ (h >> 16u)) / 4294967296.0; }
+float vnoise(float x, float y) {
+  float fi = floor(x), fj = floor(y), fx = x - fi, fy = y - fj, sx = fx * fx * (3.0 - 2.0 * fx), sy = fy * fy * (3.0 - 2.0 * fy); int i = int(fi), j = int(fj);
+  float a = hash2(i, j), b = hash2(i + 1, j), c = hash2(i, j + 1), d = hash2(i + 1, j + 1); return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+}
+bool inb(float lx, float lz, float x0, float x1, float z0, float z1) { return lx >= x0 && lx <= x1 && lz >= z0 && lz <= z1; }
+vec3 ship(float lx, float lz, float mpp, float hp) {
+  float w = max(0.7, mpp * 1.3), edge = max(0.9, mpp), n = hash2(int(floor(lx * 2.0)), int(floor(lz * 2.0)));
+  if (hp - abs(lx) < edge || 26.0 - abs(lz) < edge) return TRIM;
+  if (inb(lx, lz, hp - 34.0, hp - 25.0, -23.0, -9.0)) return TRIM;
+  if (inb(lx, lz, hp - 25.0, hp - 16.0, -23.0, -9.0)) return BOX;
+  if (inb(lx, lz, hp - 13.0, hp - 6.0, -19.0, -3.0)) return length(vec2(lx - (hp - 9.5), lz + 11.0)) < 2.2 ? WHITE : BOX;
+  if (inb(lx, lz, hp - 16.0, hp - 4.0, -24.0, 5.0)) return vec3(43.0, 50.0, 57.0);
+  if (inb(lx, lz, -hp + 5.0, -hp + 14.0, 10.0, 19.0)) return vec3(201.0, 122.0, 43.0);
+  if (length(vec2(lx + hp - 20.0, lz + 12.0)) < 1.8) return WHITE;
+  float rr = length(vec2(lx, lz));
+  if (abs(rr - 10.0) < w) return WHITE;
+  if (abs(rr - 8.4) < w) { float A = abs(atan(lz, lx)); if (A < 0.9 || A > 3.14159265 - 0.9) return vec3(242.0, 194.0, 48.0); }
+  if (rr < 3.4 && (abs(lx - lz) < w * 0.9 || abs(lx + lz) < w * 0.9)) return WHITE;
+  return vec3(56.0, 65.0, 74.0) + (n - 0.5) * 6.0;
+}
+void main() {
+  float aa = gl_FragCoord.x - uSize.x * 0.5, bb = gl_FragCoord.y - uSize.y * (0.5 + uShift);          // row 0 of the CPU image is the top; gl_FragCoord counts from the bottom
+  vec3 D = uF * uFL + uR * aa + uU * bb, col; float len = length(D);
+  if (D.y > -1e-3 * len) { float e = min(1.0, max(0.0, D.y / len) * 3.0); col = vec3(172.0 - 108.0 * e, 197.0 - 90.0 * e, 212.0 - 50.0 * e); }
+  else {
+    float tt = uCy / -D.y, X = uC.x + tt * D.x, Z = uC.z + tt * D.z, range = tt * len, mpp = min(400.0, max(range / uFL, range * range / (uFL * uCy)));
+    bool on = false; float lx = 0.0;
+    for (int k = 0; k < 4; k++) { if (k >= uNPads) break; lx = X - uPads[k]; if (abs(lx) <= uHp && abs(Z) <= 26.0) { on = true; break; } }
+    if (on) col = ship(lx, Z, mpp, uHp);
+    else {
+      float det = exp(-mpp * 0.25);
+      float v = (vnoise(X * 0.22 + uWs * 0.5, Z * 0.22) * 2.0 - 1.0) * 0.6 + (vnoise(X * 0.8 - uWs, Z * 0.8 + uWs * 0.6) * 2.0 - 1.0) * 0.4;
+      float tint = (8.0 * sin(X * 0.004 + Z * 0.003) + 5.0 * sin(X * 0.0013 - Z * 0.0021)) * exp(-range / 3000.0), g = v > 0.5 ? det * (v - 0.5) / 0.5 : 0.0;      // ("patch" is a reserved word in GLSL)
+      col = vec3(20.0 + tint * 0.4 + v * det * 10.0 + 40.0 * g, 86.0 + tint + v * det * 16.0 + 50.0 * g, 106.0 + tint + v * det * 16.0 + 54.0 * g);
+      float outd = 1e9; for (int k = 0; k < 4; k++) { if (k >= uNPads) break; outd = min(outd, max(abs(X - uPads[k]) - uHp, abs(Z) - 26.0)); }
+      float fw = min(3.0 + mpp * 0.5, 10.0);
+      if (outd < fw) { float q = 1.0 - outd / fw; q = q * q * (0.55 + 0.2 * v * det); col += (vec3(235.0, 245.0, 250.0) - col) * q; }
+    }
+    float fog = 1.0 - exp(-range / 9000.0); col += (SKY - col) * fog;
+  }
+  outC = vec4(clamp(col, 0.0, 255.0) / 255.0, 1.0);
+}`;
+    const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+    const prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, '#version 300 es\nin vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }')); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog); if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+    const vao = gl.createVertexArray(); gl.bindVertexArray(vao); gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);                // one triangle that covers the picture
+    const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const U = {}; for (const n of ['uSize', 'uFL', 'uShift', 'uHp', 'uWs', 'uCy', 'uC', 'uF', 'uU', 'uR', 'uPads', 'uNPads']) U[n] = gl.getUniformLocation(prog, n);
+    const o = { c, gl, prog, vao, U, pads: new Float32Array(4), lost: false };
+    c.addEventListener('webglcontextlost', () => { o.lost = true; });
+    return o;
+  } catch (e) { console.warn('landing cam: no graphics-card version, drawing it on the CPU:', e); return null; }
+})();
+function camSceneGL(rig, t0) {
+  const { gl, U, pads } = CAM_GL, { C, f, u, r } = rig;
+  pads.fill(0); for (let k = 0; k < Math.min(4, PADS.length); k++) pads[k] = PADS[k];
+  gl.viewport(0, 0, SW, SH); gl.useProgram(CAM_GL.prog); gl.bindVertexArray(CAM_GL.vao);
+  gl.uniform2f(U.uSize, SW, SH); gl.uniform1f(U.uFL, (SW / 2) / Math.tan(CAMV.fov * Math.PI / 360)); gl.uniform1f(U.uShift, CAMV.shift); gl.uniform1f(U.uHp, (PAD[1] - PAD[0]) / 2);
+  gl.uniform1f(U.uWs, t0 * 0.6); gl.uniform1f(U.uCy, Math.max(C[1], 1)); gl.uniform3f(U.uC, C[0], C[1], C[2]); gl.uniform3f(U.uF, f[0], f[1], f[2]); gl.uniform3f(U.uU, u[0], u[1], u[2]); gl.uniform3f(U.uR, r[0], r[1], r[2]);
+  gl.uniform1fv(U.uPads, pads); gl.uniform1i(U.uNPads, Math.min(4, PADS.length));
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+}
+function camScene(rig, t0) {                                                     // the scene image, from the graphics card when it can; returns the canvas that holds it
+  if (CAM_GL && !CAM_GL.lost) { try { camSceneGL(rig, t0); return CAM_GL.c; } catch (e) { console.warn('landing cam: graphics card failed, back to the CPU:', e); CAM_GL.lost = true; } }
+  camSceneCPU(rig, t0); return sceneC;
+}
 function drawCam() { try { drawCam0(false); } finally { cg = cg0; } }
 function drawCam0(partner = false) {                                                                         // partner: the other lander of a pair, drawn into the partner camera's buffers
   if (!partner && (!camOpen || !VIS.cam)) return;                                                              // a hidden or collapsed camera is not drawn at all
@@ -2092,10 +2190,10 @@ function drawCam0(partner = false) {                                            
   CAMV.shift = hull ? 0.5 + (CAMV.off / CAMV.hc) * ((CW / 2) / Math.tan(CAMV.fov * Math.PI / 360)) / CH - hull.apex : 0.15;          // the view slides so that the engine sits exactly where this picture's hull has its top
   const c = camState(s), f = c.f, rig = camRig(f), t0 = performance.now() / 1000, FL = (CW / 2) / Math.tan(CAMV.fov * Math.PI / 360);
   const th = Math.abs(((f.a + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI);
-  camScene(rig, t0);
+  const sceneSrc = camScene(rig, t0);
   cg.imageSmoothingEnabled = true; cg.imageSmoothingQuality = 'high';
   const om = c.K.w || 0;
-  cg.drawImage(sceneC, 0, 0, CW, CH);
+  cg.drawImage(sceneSrc, 0, 0, CW, CH);
   const proj = (x, y, z = 0) => {                                                                              // a world point -> {x, y} in the picture and its depth; null when it is behind the lens
     const dx = x - rig.C[0], dy = y - rig.C[1], dz = z - rig.C[2], zz = dx * rig.f[0] + dy * rig.f[1] + dz * rig.f[2];
     if (zz < 0.6) return null;
@@ -3929,7 +4027,16 @@ function recorderInit() {
 let camT = 0, cam2T = 0;
 const CAM_FPS = 12;                                                               // the landing cam is ray-traced: this many pictures a second (lower = lighter on the page)
 // Showcase: scrolled below the picture it rests, unless the monitoring ground is on screen; then it runs at 20 pictures a second (the speed the simulation steps in, so nothing slows down)
-function loop(now) { if (SHOW) { const far = window.scrollY >= window.innerHeight; if (document.hidden || (far && !OPS.vis) || now - SHC.lastDraw < 1000 / (far ? 20 : SHC.FPS) - 2) { requestAnimationFrame(loop); return; } SHC.lastDraw = now; } const dt = Math.min(.05, (now - lastT) / 1000); lastT = now; update(dt); const offStage = window.scrollY >= window.innerHeight * 0.98 && !(OPS.vis && OPS.src === 'view'); if (!offStage) draw(); if (ADM.on) adminFrame(now); else { if (brainOn) drawBrain(); if (miniOpen) drawMini(); try { if (now - camT >= 1000 / CAM_FPS - 4) { camT = now; drawCam(); } if (now - cam2T >= 1000 / CAM2_FPS - 4) { cam2T = now; drawCamPartner(); } if (!offStage) { drawPhase(); drawGraphs(now); } } catch (e) { /* never stop the animation loop */ } } requestAnimationFrame(loop); }
+const opsViewIO = new IntersectionObserver(es => { for (const e of es) OPS.viewOn = e.isIntersecting; });
+function opsWantsCam() {                                  // the landing cam is wanted by the dock: its 3D View tab, or the Overview's live view while on screen
+  if (!OPS.vis || OPS.src !== 'cam') return OPS.vis && OPS.tab === 'view3d';
+  if (OPS.tab === 'view3d') return true; if (OPS.tab !== 'overview') return false;
+  const v = $('opsView'); if (!v) return false;
+  if (OPS.viewEl !== v) { OPS.viewEl = v; opsViewIO.disconnect(); opsViewIO.observe(v); const r = v.getBoundingClientRect(); OPS.viewOn = r.bottom > 0 && r.top < window.innerHeight; }
+  return OPS.viewOn;                                      // kept by an IntersectionObserver, so the loop never asks the browser for a fresh layout
+}
+let loopT = 0;                                                     // the main screen draws at most 30 pictures a second (the flight data has 20; the showcase has its own limit)
+function loop(now) { if (!SHOW) { if (now - loopT < 1000 / 30 - 2) { requestAnimationFrame(loop); return; } loopT = now; } if (SHOW) { const far = window.scrollY >= window.innerHeight; if (document.hidden || (far && !OPS.vis) || now - SHC.lastDraw < 1000 / (far ? 20 : SHC.FPS) - 2) { requestAnimationFrame(loop); return; } SHC.lastDraw = now; } const dt = Math.min(.05, (now - lastT) / 1000); lastT = now; update(dt); const offStage = window.scrollY >= window.innerHeight * 0.98 && !(OPS.vis && OPS.src === 'view'); if (!offStage) draw(); if (ADM.on) adminFrame(now); else { if (brainOn) drawBrain(); if (miniOpen && !offStage) drawMini(); try { if ((!offStage || opsWantsCam()) && now - camT >= 1000 / CAM_FPS - 4) { camT = now; drawCam(); } if (!offStage && now - cam2T >= 1000 / CAM2_FPS - 4) { cam2T = now; drawCamPartner(); } if (!offStage) { drawPhase(); drawGraphs(now); } } catch (e) { /* never stop the animation loop */ } } requestAnimationFrame(loop); }
 if (SHOW) {
   try { if (localStorage.getItem('spacexperiment.showdock') === '1') showcaseDock(true, false); else $('jDock').textContent = 'Move beside the tabs \u2193'; } catch (e) { /* storage may be blocked */ }
   let rt = 0; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (JC.inited) judgeSlide(JC.slide); }, 200); });
@@ -3961,12 +4068,16 @@ const OPS_ICON = {
 const opsSet = (id, v) => { const e = $(id); if (e && e.textContent !== v) e.textContent = v; return e; };
 const opsHtml = (id, h) => { const e = $(id); if (e && OPS.html[id] !== h) { OPS.html[id] = h; e.innerHTML = h; } };
 const opsClamp = (v, a, b) => Math.max(a, Math.min(b, v));
+// each canvas's on-screen size, kept by a ResizeObserver: reading clientWidth after the panels have changed their text makes the browser lay out the whole page again,
+// once per chart; a resize redraws the slow panels on the next tick
+const opsSizeRO = new ResizeObserver(es => { for (const e of es) e.target._sz = [Math.round(e.contentRect.width), Math.round(e.contentRect.height)]; OPS.slowT = 0; });
+function opsSize(c) { if (!c._szOn) { c._szOn = true; opsSizeRO.observe(c); } return c._sz || [c.clientWidth, c.clientHeight]; }
 function opsFit(c) {                                       // match the canvas's pixel size to its on-screen size; returns the scale
-  const d = Math.min(2, window.devicePixelRatio || 1), w = Math.max(2, Math.round(c.clientWidth * d)), h = Math.max(2, Math.round(c.clientHeight * d));
+  const d = Math.min(2, window.devicePixelRatio || 1), [cw, ch] = opsSize(c), w = Math.max(2, Math.round(cw * d)), h = Math.max(2, Math.round(ch * d));
   if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
   return d;
 }
-function opsCtx(id) { const c = $(id), d = opsFit(c), x = c.getContext('2d'); x.setTransform(d, 0, 0, d, 0, 0); x.clearRect(0, 0, c.clientWidth, c.clientHeight); return { x, w: c.clientWidth, h: c.clientHeight }; }
+function opsCtx(id) { const c = $(id), d = opsFit(c), x = c.getContext('2d'), [w, h] = opsSize(c); x.setTransform(d, 0, 0, d, 0, 0); x.clearRect(0, 0, w, h); return { x, w, h }; }
 function opsMirror(id, src, cover) {                       // a copy of a canvas the main screen already draws
   const c = $(id); if (!c || !src || !src.width) return;
   opsFit(c); const x = c.getContext('2d'); x.setTransform(1, 0, 0, 1, 0, 0); x.fillStyle = '#04080f'; x.fillRect(0, 0, c.width, c.height);
@@ -4566,6 +4677,22 @@ const OPS_AI_EXTRA = {
   },
 };
 ['de', 'pr', 'fs'].forEach(id => { const base = OPS_PANELS[id].update; OPS_PANELS[id].update = function (st) { base.call(this, st); OPS_AI_EXTRA[id](st); }; });
+// ---- Attitude: readouts above the dial, and below it the tilt against both limits and a short history of tilt and spin
+function opsAttExtra(st) {
+  if (!st) { opsHtml('opsAtK', ''); opsHtml('opsAtG', ''); opsNote('opsAtH', OPS_WAIT); opsHtml('opsAtHL', ''); return; }
+  const { f, K, speed, fr, i } = st, D = 57.2958, bx = -Math.sin(f.a), by = Math.cos(f.a), sgn = v => (v < 0 ? '\u2212' : '') + Math.abs(v).toFixed(1);
+  const aoa = speed > 3 ? Math.atan2(bx * (-K.vy) - by * (-K.vx), bx * (-K.vx) + by * (-K.vy)) * D : null, path = speed > 1 ? Math.atan2(-K.vy, Math.abs(K.vx)) * D : null;
+  opsHtml('opsAtK', opsRow('Tilt', sgn(f.a * D) + '\u00b0') + opsRow('Spin', sgn(K.w * D) + '\u00b0/s') + opsRow('Gimbal', sgn((f.g || 0) * D) + '\u00b0') + opsRow('Grid fins', sgn((f.f || 0) * D) + '\u00b0') +
+    opsRow('<span title="angle of attack: between the stage axis and the airflow">AoA</span>', aoa === null ? '\u2014' : sgn(aoa) + '\u00b0') + opsRow('<span title="flight-path angle: how steeply it is moving, below the horizontal">Path</span>', path === null ? '\u2014' : `${path.toFixed(0)}\u00b0 down`));
+  const tilt = Math.abs(f.a);
+  opsHtml('opsAtG', opsGauge(`Landing \u2264 ${(OPS_TILT_OK * D).toFixed(1)}\u00b0`, tilt / OPS_TILT_OK / 2, `${(tilt * D).toFixed(1)}\u00b0`, { col: tilt <= OPS_TILT_OK ? OPS_GOOD : OPS_WARN, mark: 0.5 }) +
+    opsGauge(`Flight limit ${TL.tiltLim}\u00b0`, tilt * D / TL.tiltLim, `${(tilt * D).toFixed(1)}\u00b0`, { col: opsTone(tilt * D / TL.tiltLim, 0.6, 0.85) }));
+  const j0 = Math.max(0, i - Math.round(10 / FDT)), tl = [], sp = [];
+  for (let j = j0; j <= i; j++) { const t = (j - j0) * FDT; tl.push([t, fr[j].a * D]); sp.push([t, opsOm(fr, j) * D]); }
+  const S = [{ label: 'tilt', unit: '\u00b0', col: '#c78bff', dash: [], axis: 'L', pts: tl }, { label: 'spin', unit: '\u00b0/s', col: '#9aa7ff', dash: [7, 4], axis: 'R', pts: sp }];
+  opsCombo('opsAtH', S, Math.max(FDT, (i - j0) * FDT)); opsLegend('opsAtHL', S);
+}
+{ const base = OPS_PANELS.at.update; OPS_PANELS.at.update = function (st) { base.call(this, st); opsAttExtra(st); }; }
 function opsMarkTabs(key, val) { document.querySelectorAll(`[data-${key}]`).forEach(b => b.classList.toggle('on', b.dataset[key] === val)); }
 const OPS_WIDE_PX = 1700;                                  // this wide (CSS pixels) or wider: the "wide" arrangement, otherwise the standard one
 const opsTier = () => $('opsGrid').parentElement.clientWidth >= OPS_WIDE_PX ? 'wide' : 'std';
@@ -4681,10 +4808,12 @@ function opsOverview(st) {
 }
 
 function opsNetDraw(st) {                                  // the policy network drawn at the panel's own size (taller row = neurons further apart), from the same numbers as the main screen's network
-  const { x, w, h } = opsCtx('opsNet'), n = st && actAt(st.s);
+  const cv = $('opsNet'), n = st && actAt(st.s), key = n ? `${st.s.k}:${st.s.ep.id}:${n.t}:${opsSize(cv).join('x')}` : '';
+  if (n && cv._key === key) return; cv._key = key;                   // nothing new to draw
+  const { x, w, h } = opsCtx('opsNet');
   if (!n) { opsNote('opsNet', st ? 'no network numbers for this flight' : OPS_WAIT); return; }
   const d = n.draw, xin = n.x.map(v => Math.tanh(v)), T = 8, B = 8, labIn = w > 560 ? 128 : 12, labOut = w > 440 ? 84 : 16;
-  const X = [labIn, labIn + (w - labIn - labOut) * 0.38, labIn + (w - labIn - labOut) * 0.74, w - labOut], ys = k => ysRange(k, T, h - B), lw = Math.max(0.5, Math.min(1.3, h / 240));
+  const X = [labIn, labIn + (w - labIn - labOut) * 0.38, labIn + (w - labIn - labOut) * 0.74, w - labOut], yc = {}, ys = k => yc[k] || (yc[k] = ysRange(k, T, h - B)), lw = Math.max(0.5, Math.min(1.3, h / 240));      // each layer's positions worked out once
   edges(x, lw, d.w1, n.ni, d.n1, xin, X[0], X[1], ys(n.ni), ys(d.n1), 70);
   edges(x, lw, d.w2, d.n1, d.n2, d.h1, X[1], X[2], ys(d.n1), ys(d.n2), 100);
   edges(x, lw * 1.1, d.w3, d.n2, n.no, d.h2, X[2], X[3], ys(d.n2), ys(n.no), 30);
@@ -4696,7 +4825,7 @@ function opsNetDraw(st) {                                  // the policy network
   });
   [[d.h1, 1, d.n1], [d.h2, 2, d.n2]].forEach(([hv, col, cnt]) => hv.forEach((v, i) => {
     const y = ys(cnt)[i];
-    if (Math.abs(v) > 0.6) { x.fillStyle = tone(v, 0).replace(/[\d.]+\)$/, '0.2)'); x.beginPath(); x.arc(X[col], y, rH * 2.2, 0, 7); x.fill(); }   // glow on strongly firing neurons
+    if (Math.abs(v) > 0.6) { x.fillStyle = v >= 0 ? 'rgba(255,179,71,0.2)' : 'rgba(111,168,255,0.2)'; x.beginPath(); x.arc(X[col], y, rH * 2.2, 0, 7); x.fill(); }   // glow on strongly firing neurons (POS / NEG at 0.2)
     x.fillStyle = tone(v, 0.15); x.beginPath(); x.arc(X[col], y, rH, 0, 7); x.fill();
   }));
   const names = labOut > 40 ? OUT_NAMES : ['thr', 'gim', 'fin', 'A', 'B'];
