@@ -300,6 +300,8 @@
   .keys { margin-top:12px; font-size:11px; line-height:2.1; color:#8fa6c8; } .keys kbd { display:inline-block; min-width:18px; text-align:center; padding:0 5px; margin:0 3px 0 9px; border:1px solid #2c4a73; border-radius:4px; background:#0a1730; font:600 10px Consolas,monospace; color:#cfe3ff; } .keys kbd + kbd { margin-left:0; }
   .rcg { display:grid; grid-template-columns:minmax(150px,1fr) minmax(0,1.1fr); gap:16px; flex:1 1 auto; min-height:0; } .rcg canvas { width:100%; height:100%; min-height:170px; }
   .ostrip { display:grid; grid-template-columns:repeat(20, minmax(0,1fr)); gap:3px; width:100%; margin-top:12px; } .ostrip i { display:block; height:10px; border-radius:2px; }
+  .ops canvas { contain:size; }                              /* the drawing size follows the box; without this a canvas on a screen with a pixel ratio above 1 grows its row every frame */
+  .vwtag:empty { display:none; }
 </style>
 </head>
 <body>
@@ -469,14 +471,6 @@
   </div>
 </section>
 <!-- the dock's panels: copied into the grid by the chosen layout (OPS_LAYOUTS in the script) -->
-            <div class="ring"><svg viewBox="0 0 120 120"><circle class="rg-bg" cx="60" cy="60" r="50"/><circle class="rg-fg" id="opsRing" cx="60" cy="60" r="50" transform="rotate(-90 60 60)" stroke-dasharray="314.16" stroke-dashoffset="314.16"/></svg>
-              <div class="ring-c"><b id="opsPhCode">&mdash;</b><span id="opsPhNum">NO FLIGHT</span><span id="opsPhName"></span></div></div>
-            <ul class="chk" id="opsChk"></ul></div></template>
-            <div class="kt"><span class="kl">Altitude</span><span class="kv"><b id="kAlt">&mdash;</b><i id="kAltU">m</i></span></div>
-            <div class="kt"><span class="kl">Speed</span><span class="kv"><b id="kSpd">&mdash;</b><i>m/s</i></span><span class="ks" id="kSpdS"></span></div>
-            <div class="kt"><span class="kl">Propellant</span><span class="kv"><b id="kFuel">&mdash;</b><i>%</i></span><span class="ks" id="kFuelS"></span></div>
-            <div class="kt"><span class="kl">Tilt</span><span class="kv"><b id="kTilt">&mdash;</b><i>&deg;</i></span><span class="ks" id="kTiltS"></span></div>
-            <div class="kt"><span class="kl">Pad offset</span><span class="kv"><b id="kOff">&mdash;</b><i>m</i></span><span class="ks" id="kOffS"></span></div></div></template>
 <template id="opsT-vw"><div class="op"><h3>Live view <span class="seg2 ops-src"><button data-src="cam" class="on">Landing cam</button><button data-src="view">Stage view</button></span></h3>
             <div class="vwbox"><canvas id="opsView"></canvas><div class="vwtag" id="opsVwTag"></div></div></div></template>
 <template id="opsT-nn"><div class="op"><h3>AI neural network <span class="nnst off" id="opsNnSt">NO DATA</span></h3>
@@ -486,9 +480,6 @@
             <canvas id="opsTrain" class="cc"></canvas><div class="bar2"><i id="opsTrBar"></i></div><div class="nnnote" id="opsTrInfo">idle</div></div></template>
 <template id="opsT-at"><div class="op"><h3>Attitude <span style="text-transform:none;letter-spacing:.04em;font-weight:500;color:#5f7699">2-D: tilt only, no roll or yaw</span></h3>
             <canvas id="opsAtt" style="flex:1 1 auto;min-height:120px"></canvas><div class="nnnote" id="opsAttTxt"></div></div></template>
-            <div class="nncols" id="opsThrKv" style="grid-template-columns:repeat(4,1fr);margin:0 0 6px"></div>
-            <canvas id="opsThr" style="flex:1 1 auto;min-height:96px"></canvas><div class="nnnote">last 12 s &middot; <span style="color:#ffb347">throttle</span> 0&ndash;100 % &middot; <span style="color:#38c7ff">gimbal</span> and <span style="color:#6ee7a8">grid fins</span> each between &minus;limit and +limit</div></div></template>
-            <canvas id="opsPath" style="flex:1 1 auto;min-height:130px"></canvas><div class="nnnote" id="opsPathTxt"></div></div></template>
 <template id="opsT-sq"><div class="op"><h3>Landing sequence</h3><div class="sq" id="opsSeq"></div><table class="pht" id="opsSeqT"></table></div></template>
 <template id="opsT-sc"><div class="op"><h3>Landing score</h3>
             <div class="scr"><div class="ring"><svg viewBox="0 0 120 120"><circle class="rg-bg" cx="60" cy="60" r="50"/><circle class="rg-fg" id="opsScRing" cx="60" cy="60" r="50" transform="rotate(-90 60 60)" stroke-dasharray="314.16" stroke-dashoffset="314.16"/></svg><div class="ring-c"><b id="opsScVal">&mdash;</b><span>of 100</span></div></div>
@@ -2179,6 +2170,7 @@ function drawCam0(partner = false) {                                            
     cg.clearRect(0, 0, CW, CH); cg.save(); cg.translate(CW / 2 + jx, CH / 2 + jy); cg.rotate(jr); const zs = 1.05 + 0.012 * lvl; cg.scale(zs, zs); cg.translate(-CW / 2, -CH / 2);
     cg.drawImage(rowC, 0, 0); cg.restore(); }
   broadcastFX(cg, performance.now()); lastG.clearRect(0, 0, CW, CH); lastG.drawImage(cc, 0, 0);       // (the HUD below is drawn after, so it stays sharp)
+  if (!partner) opsCamGrab(s, c, f, th, om);                                                                 // the dock's square cam: the clean picture, before the wide overlay
   if (partner) { drawPartnerView(s, c, f, th, om); return; }
   // ---- the on-screen display, in the style of a launch broadcast: speed, altitude, flight time, g-force and the engine
   const bar = cg.createLinearGradient(0, CH - 92, 0, CH); bar.addColorStop(0, 'rgba(0,0,0,0)'); bar.addColorStop(1, 'rgba(0,0,0,.78)'); cg.fillStyle = bar; cg.fillRect(0, CH - 92, CW, 92);
@@ -3926,7 +3918,7 @@ function recorderInit() {
 let camT = 0, cam2T = 0;
 const CAM_FPS = 12;                                                               // the landing cam is ray-traced: this many pictures a second (lower = lighter on the page)
 // Showcase: scrolled below the picture it rests, unless the monitoring ground is on screen; then it runs at 20 pictures a second (the speed the simulation steps in, so nothing slows down)
-function loop(now) { if (SHOW) { const far = window.scrollY >= window.innerHeight; if (document.hidden || (far && !OPS.vis) || now - SHC.lastDraw < 1000 / (far ? 20 : SHC.FPS) - 2) { requestAnimationFrame(loop); return; } SHC.lastDraw = now; } const dt = Math.min(.05, (now - lastT) / 1000); lastT = now; update(dt); draw(); if (ADM.on) adminFrame(now); else { if (brainOn) drawBrain(); if (miniOpen) drawMini(); try { if (now - camT >= 1000 / CAM_FPS - 4) { camT = now; drawCam(); } if (now - cam2T >= 1000 / CAM2_FPS - 4) { cam2T = now; drawCamPartner(); } drawPhase(); drawGraphs(now); } catch (e) { /* never stop the animation loop */ } } requestAnimationFrame(loop); }
+function loop(now) { if (SHOW) { const far = window.scrollY >= window.innerHeight; if (document.hidden || (far && !OPS.vis) || now - SHC.lastDraw < 1000 / (far ? 20 : SHC.FPS) - 2) { requestAnimationFrame(loop); return; } SHC.lastDraw = now; } const dt = Math.min(.05, (now - lastT) / 1000); lastT = now; update(dt); const offStage = window.scrollY >= window.innerHeight * 0.98 && !(OPS.vis && OPS.src === 'view'); if (!offStage) draw(); if (ADM.on) adminFrame(now); else { if (brainOn) drawBrain(); if (miniOpen) drawMini(); try { if (now - camT >= 1000 / CAM_FPS - 4) { camT = now; drawCam(); } if (now - cam2T >= 1000 / CAM2_FPS - 4) { cam2T = now; drawCamPartner(); } if (!offStage) { drawPhase(); drawGraphs(now); } } catch (e) { /* never stop the animation loop */ } } requestAnimationFrame(loop); }
 if (SHOW) {
   try { if (localStorage.getItem('spacexperiment.showdock') === '1') showcaseDock(true, false); else $('jDock').textContent = 'Move beside the tabs \u2193'; } catch (e) { /* storage may be blocked */ }
   let rt = 0; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (JC.inited) judgeSlide(JC.slide); }, 200); });
@@ -4023,8 +4015,8 @@ const opsTAt = (st, k) => { const s = opsStarts(st)[k]; return s >= 0 && k + 1 <
 const OPS_PANELS = {
   vw: { wide: true, update(st) {
     if (!st) { opsNote('opsView', OPS_WAIT); opsSet('opsVwTag', ''); return; }
-    opsMirror('opsView', OPS.src === 'cam' ? $('cam') : $('view'), OPS.src === 'cam');
-    opsSet('opsVwTag', `ALT ${st.h >= 1000 ? (st.h / 1000).toFixed(2) + ' km' : st.h.toFixed(0) + ' m'}  ·  ${st.speed.toFixed(0)} m/s  ·  T+${((st.i + 1) * FDT).toFixed(1)} s`);
+    opsMirror('opsView', OPS.src === 'cam' ? (OPS.camSq || $('cam')) : $('view'), false);
+    opsSet('opsVwTag', OPS.src === 'cam' ? '' : `ALT ${st.h >= 1000 ? (st.h / 1000).toFixed(2) + ' km' : st.h.toFixed(0) + ' m'}  ·  ${st.speed.toFixed(0)} m/s  ·  T+${((st.i + 1) * FDT).toFixed(1)} s`);
   } },
   nn: { update(st) {
     opsMirror('opsNet', $('minibrain'), false);
@@ -4315,7 +4307,7 @@ Object.assign(OPS_PANELS, {
   }, update(st) {
     (OPS.kp || []).forEach(([, col, val, sub, trend], k) => {
       if (!st) { opsSet(`kp${k}v`, '—'); opsSet(`kp${k}u`, ''); opsSet(`kp${k}s`, ''); opsCtx(`kp${k}c`); return; }
-      const [v, u] = val(st); opsSet(`kp${k}v`, v); opsSet(`kp${k}u`, u); opsSet(`kp${k}s`, sub(st)); opsSpark(`kp${k}c`, trend(st), col);
+      const [v, u] = val(st); opsSet(`kp${k}v`, v); opsSet(`kp${k}u`, u); opsSet(`kp${k}s`, sub(st)); if (OPS.slowTick) opsSpark(`kp${k}c`, trend(st), col);
     });
   } },
 });
@@ -4495,6 +4487,31 @@ Object.assign(OPS_PANELS, {
     opsEngineStrip(st);
   } },
 });
+// ---- the dock's square landing cam: the middle square of the camera picture, taken before the wide overlay is drawn on it, with an overlay laid out for a square
+// (the same arrangement as the partner cam). Called from drawCam0 only while the dock is on screen, so it costs nothing otherwise.
+function opsCamGrab(s, c, f, th, om) {
+  if (!OPS.vis || OPS.src !== 'cam') return;
+  const N0 = 300, N = 540, cv = OPS.camSq || (OPS.camSq = Object.assign(document.createElement('canvas'), { width: N, height: N })), g2 = cv.getContext('2d');
+  g2.setTransform(1, 0, 0, 1, 0, 0); g2.clearRect(0, 0, N, N); g2.imageSmoothingEnabled = true; g2.drawImage(cc, (CW - CH) / 2, 0, CH, CH, 0, 0, N, N);
+  g2.setTransform(N / N0, 0, 0, N / N0, 0, 0);                                                                // the overlay is laid out on a 300 x 300 square, then scaled
+  const top = g2.createLinearGradient(0, 0, 0, 70); top.addColorStop(0, 'rgba(0,0,0,.6)'); top.addColorStop(1, 'rgba(0,0,0,0)'); g2.fillStyle = top; g2.fillRect(0, 0, N0, 70);
+  const bar = g2.createLinearGradient(0, N0 - 96, 0, N0); bar.addColorStop(0, 'rgba(0,0,0,0)'); bar.addColorStop(1, 'rgba(0,0,0,.8)'); g2.fillStyle = bar; g2.fillRect(0, N0 - 96, N0, 96);
+  g2.fillStyle = s.col; g2.beginPath(); g2.arc(24, 24, 15, 0, 7); g2.fill(); g2.fillStyle = '#0b0d10'; g2.font = '700 17px system-ui'; g2.textAlign = 'center'; g2.fillText(String(s.k + 1), 24, 30);
+  g2.fillStyle = '#fff'; g2.textAlign = 'left'; g2.font = '700 15px system-ui'; g2.fillText('LANDING CAM', 46, 21); g2.fillStyle = '#d6dbe6'; g2.font = '600 12px Consolas, monospace';
+  const dxp = PADC - f.x, tn1 = (v, d = 1) => (v < 0 ? '−' : '+') + Math.abs(v).toFixed(d);
+  g2.fillText(`SHIP ${Math.abs(dxp) >= 1000 ? (Math.abs(dxp) / 1000).toFixed(2) + ' km' : Math.round(Math.abs(dxp)) + ' m'} ${dxp >= 0 ? '▸' : '◂'}  MISS ${tn1(c.miss - dxp, 0)} m`, 46, 38);
+  const ring = (cx, cy, r, big, small) => { g2.strokeStyle = 'rgba(255,255,255,.55)'; g2.lineWidth = 2; g2.beginPath(); g2.arc(cx, cy, r, 0, 7); g2.stroke(); g2.textAlign = 'center'; g2.fillStyle = '#fff'; g2.font = '700 19px system-ui'; g2.fillText(big, cx, cy + 5); g2.fillStyle = '#d6dbe6'; g2.font = '600 9px system-ui'; g2.fillText(small, cx, cy + 17); };
+  const alt = c.h >= 1000 ? [(c.h / 1000).toFixed(1), 'ALT KM'] : [Math.round(c.h) + '', 'ALT M'];
+  ring(36, N0 - 44, 29, String(Math.round(c.speed * 3.6)), 'KM/H'); ring(N0 - 36, N0 - 44, 29, alt[0], alt[1]);
+  const tS = Math.max(0, s.last) * FDT, mm = Math.floor(tS / 60) % 60, ss = Math.floor(tS) % 60, gF = f.ax !== undefined ? Math.hypot(f.ax, f.ay + TL.g) / TL.g : 0;
+  g2.textAlign = 'center'; g2.fillStyle = '#fff'; g2.font = '700 21px system-ui'; g2.fillText(`T+ ${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`, N0 / 2, N0 - 52);
+  g2.font = '600 11px Consolas, monospace'; g2.fillStyle = '#d6dbe6'; g2.fillText(`TILT ${(th * 180 / Math.PI).toFixed(1)}°  SPIN ${(om >= 0 ? '+' : '−') + Math.abs(om * 180 / Math.PI).toFixed(1)}°/s`, N0 / 2, N0 - 33); g2.fillText(`G ${gF.toFixed(1)}`, N0 / 2, N0 - 18);
+  g2.fillStyle = f.m > 0.02 ? '#ffb84d' : 'rgba(255,255,255,.3)'; g2.beginPath(); g2.arc(N0 - 20, 24, 7, 0, 7); g2.fill(); g2.strokeStyle = 'rgba(255,255,255,.5)'; g2.lineWidth = 1.5; g2.beginPath(); g2.arc(N0 - 20, 24, 12, 0, 7); g2.stroke();   // the engine light
+  g2.strokeStyle = s.col; g2.lineWidth = 3; g2.strokeRect(1.5, 1.5, N0 - 3, N0 - 3);                                // the frame in the lander's colour
+  g2.setTransform(1, 0, 0, 1, 0, 0);
+}
+// charts, tables and strips are redrawn about three times a second, the live numbers and the camera every frame (~12 a second): a flight lasts tens of seconds
+const OPS_SLOW = new Set(['fp', 'gd', 'ac', 'pw', 'fo', 'ey', 'rh', 'tg', 'en', 'sq', 'sc', 'rw', 'lp', 'ls', 'rc', 'pg', 'fs', 'ts', 'tr', 'pf', 'pr', 'de']);
 function opsMarkTabs(key, val) { document.querySelectorAll(`[data-${key}]`).forEach(b => b.classList.toggle('on', b.dataset[key] === val)); }
 const OPS_WIDE_PX = 1700;                                  // this wide (CSS pixels) or wider: the "wide" arrangement, otherwise the standard one
 const opsTier = () => $('opsGrid').parentElement.clientWidth >= OPS_WIDE_PX ? 'wide' : 'std';
@@ -4512,7 +4529,7 @@ function opsBuildLayout(name) {                            // put the panels of 
   }
   opsLayoutButtons(); opsMarkTabs('src', OPS.src); OPS_TABKEYS.forEach(k => opsMarkTabs(k, OPS[k]));
   try { localStorage.setItem('spacexperiment.opslayout', OPS.layout); } catch (e) { /* storage may be blocked */ }
-  OPS.t = 0;
+  OPS.t = 0; OPS.slowT = 0;
 }
 function opsLayoutButtons() { $('opsLayouts').style.display = Object.keys(OPS_LAYOUTS).length > 1 ? '' : 'none'; $('opsLayouts').innerHTML = Object.entries(OPS_LAYOUTS).map(([k, v]) => `<button data-layout="${k}" class="${k === OPS.layout ? 'on' : ''}">${v.label}</button>`).join(''); }
 function opsWire() {                                       // one delegated listener: the panels are rebuilt whenever the layout changes
@@ -4532,7 +4549,8 @@ function opsWire() {                                       // one delegated list
   $('ops').addEventListener('input', e => { if (e.target.id === 'opsSimSeek') opsSeek(+e.target.value / 1000); });
 }
 function opsOverview(st) {
-  for (const id of OPS.panels) { try { OPS_PANELS[id].update(st); } catch (e) { console.warn('monitoring ground panel ' + id + ':', e); } }
+  const now = performance.now(), slow = !OPS.slowT || now - OPS.slowT >= 300; if (slow) OPS.slowT = now; OPS.slowTick = slow;
+  for (const id of OPS.panels) { if (!slow && OPS_SLOW.has(id)) continue; try { OPS_PANELS[id].update(st); } catch (e) { console.warn('monitoring ground panel ' + id + ':', e); } }
 }
 
 function opsNetPanel(st) {
