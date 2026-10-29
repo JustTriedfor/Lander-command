@@ -16,7 +16,7 @@ It is written in Python on its own rigid-body physics (no game engine), exposes 
 - **A scripted pilot** (`src/sim/expert.py`), a hand-written controller you can read, copy and beat.
 - **A way to train a neural-network pilot**: behaviour cloning from the scripted pilot, then DAgger, then evaluation, as one pipeline. PPO training is included too.
 - **Trained pilots included** (small, about 0.6 MB each) in `models/checkpoints/`, so you can fly something on the first day.
-- **A browser app**: a live viewer with telemetry panels, a replay *showcase* that loops saved landings without simulating anything, and a **monitoring ground** under the picture with seven tabs and three switchable overview layouts.
+- **A browser app**: a live viewer with telemetry panels, a replay *showcase* that loops saved landings without simulating anything, and a **monitoring ground** under the picture: a dense dashboard of readings, combined charts, gauges and landing margins.
 - **Two-lander modes**: two landers, two pads, either one shared network or one network each.
 - **157 tests.**
 
@@ -94,7 +94,7 @@ It opens at <http://127.0.0.1:8767> and only listens on your own computer. Use `
 
 - **Replay showcase:** <http://127.0.0.1:8767/?showcase=1>. Plays eleven saved landings in a loop with the numbers behind them. Nothing is simulated while it plays, so it is light on the computer and suits a screen left running. `?recorder=1` records a new set.
 - **Live view:** the main page shows the flights of a training run. It starts empty until you start a run from the **Startup** tab, which runs the whole pipeline for you.
-- **Monitoring ground:** scroll below the picture. Tabs: Overview, Telemetry, 3D View, AI / NN, Graphs, Logs, Settings. The Overview has three layouts (Classic, Mission, Console), chosen with the buttons at the top right, and your choice is remembered. It only reads what the main screen already has, and it stops drawing when it is off screen. Everything on it comes from the simulator's own numbers: there is no engine-temperature, camera-vision or ship-motion panel because the simulator has none of those.
+- **Monitoring ground:** scroll below the picture. Tabs: Overview, Telemetry, 3D View, AI / NN, Graphs, Logs, Settings. The Overview packs eight key readings with trend lines, a flight-phase bar, the live view, system gauges, landing margins and combined charts (solid, dashed and dotted lines with a legend, some on a second axis). Its panels are small templates, so adding another layout is one entry in `OPS_LAYOUTS` in `src/app/index.html`. It only reads what the main screen already has, and it stops drawing when it is off screen. Everything on it comes from the simulator's own numbers: there is no engine-temperature, camera-vision or ship-motion panel because the simulator has none of those.
 
 ## How a landing is judged
 
