@@ -238,7 +238,7 @@
   .seg2 { display:inline-flex; flex-wrap:wrap; border:1px solid var(--ob); border-radius:7px; overflow:hidden; } .seg2 button { padding:2px 9px; background:#0a1730; border:0; color:var(--om); font:600 10.5px system-ui; letter-spacing:.06em; cursor:pointer; text-transform:none; } .seg2 button.on { background:#12376a; color:#fff; }
   .ring { position:relative; width:132px; height:132px; margin:2px auto 8px; } .ring svg { width:100%; height:100%; } .rg-bg { fill:none; stroke:#10294a; stroke-width:7; } .rg-fg { fill:none; stroke:var(--oa); stroke-width:7; stroke-linecap:round; transition:stroke-dashoffset .3s; filter:drop-shadow(0 0 5px rgba(56,199,255,.6)); } .rg-fg.ok { stroke:var(--ook); } .rg-fg.bad { stroke:var(--obad); } .rg-fg.warn { stroke:var(--ow); }
   .ring-c { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; line-height:1.25; } .ring-c b { font-size:19px; letter-spacing:.06em; } .ring-c span { font-size:9.5px; letter-spacing:.12em; color:var(--om); }
-  .vwbox { position:relative; flex:1 1 auto; min-height:230px; border-radius:8px; overflow:hidden; background:#04080f; } .vwbox canvas { position:absolute; inset:0; width:100%; height:100%; border-radius:0; }
+  .vwbox { position:relative; flex:1 1 0; min-height:100px; border-radius:8px; overflow:hidden; background:#04080f; } .vwbox canvas { position:absolute; inset:0; width:100%; height:100%; border-radius:0; }
   .vwtag { position:absolute; left:10px; top:8px; font:600 11.5px Consolas,monospace; letter-spacing:.06em; color:#dff2ff; background:rgba(3,8,16,.62); border:1px solid #1a4573; border-radius:6px; padding:3px 8px; }
   .nnbox { position:relative; } .nnst { font:600 10px system-ui; letter-spacing:.14em; padding:1px 8px; border-radius:20px; border:1px solid #1f6b4a; color:var(--ook); } .nnst.off { color:var(--om); border-color:var(--ob); }
   .nncols { display:grid; grid-template-columns:1fr 1fr; gap:2px 14px; margin-top:7px; font-size:11.5px; } .nncols div { display:flex; justify-content:space-between; gap:6px; white-space:nowrap; } .nncols span { color:var(--om); overflow:hidden; text-overflow:ellipsis; } .nncols b { font-weight:600; font-variant-numeric:tabular-nums; }
@@ -249,7 +249,7 @@
   .sq div b { display:block; font:600 18px system-ui; color:#35537c; margin-bottom:2px; } .sq div i { display:block; font-style:normal; font:11px Consolas,monospace; margin-top:3px; color:#6d86a8; } .sq .done { color:#cfe3ff; border-color:#1f6b4a; } .sq .done b { color:var(--ook); } .sq .now { color:#fff; border-color:var(--oa); box-shadow:0 0 12px rgba(56,199,255,.28); } .sq .now b { color:var(--oa); } .sq .bad { color:#ffc2c2; border-color:#7a2f35; } .sq .bad b { color:var(--obad); }
   .scr { display:flex; flex-direction:column; align-items:center; gap:6px; } .scr .ring { width:84px; height:84px; margin:0; flex:none; } .scr .ring-c b { font-size:21px; } .scl { width:100%; font-size:11.5px; } .scl div { display:flex; justify-content:space-between; padding:2px 0; border-bottom:1px solid #10294a; } .scl span { color:var(--om); } .scl b.ok { color:var(--ook); } .scl b.no { color:var(--obad); }
   .envk { font-size:12px; } .envk div { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #10294a; } .envk div:last-child { border:0; } .envk span { color:var(--om); } .envk b { font-variant-numeric:tabular-nums; }
-  .ops-log { flex:1 1 auto; min-height:120px; max-height:300px; overflow:auto; font:11.5px/1.5 Consolas,'Cascadia Mono',monospace; color:#b9cde8; } .ops-log .tl { white-space:pre-wrap; } .ops-log.tall { max-height:none; height:calc(100vh - 150px); }
+  .ops-log { flex:1 1 0; min-height:40px; overflow:auto; font:11.5px/1.5 Consolas,'Cascadia Mono',monospace; color:#b9cde8; } .ops-log .tl { white-space:pre-wrap; } .ops-log.tall { max-height:none; height:calc(100vh - 150px); }
   .ops-log::-webkit-scrollbar { width:8px; } .ops-log::-webkit-scrollbar-thumb { background:#1a3a63; border-radius:4px; }
   .ops-tele { column-count:3; column-gap:26px; font:12.5px/1.65 Consolas,'Cascadia Mono',monospace; } .ops-tele .tele-sec { font:600 10.5px system-ui; letter-spacing:.12em; margin-top:8px; break-after:avoid; } .ops-tele .tele-row { break-inside:avoid; }
   .ops-split { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:10px; } @media (max-width:1000px) { .ops-split { grid-template-columns:1fr; } .ops-tele { column-count:2; } }
@@ -261,13 +261,13 @@
   /* Showcase: the Graphs tab only shows a live run's training charts; the live-run panels are left out of the showcase layouts (OPS_LAYOUTS .show) */
   body.showcase #opsNav [data-tab="graphs"] { display:none; }
   /* panels of the Mission layout */
-  .tgbox { display:grid; grid-template-columns:minmax(0,1fr) 150px; gap:10px; flex:1 1 auto; min-height:150px; } .tgbox canvas { width:100%; height:100%; min-height:150px; } .tgk { font-size:12px; align-self:start; } .tgk div { display:flex; justify-content:space-between; gap:6px; padding:4px 0; border-bottom:1px solid #10294a; } .tgk span { color:var(--om); } .tgk b { font-variant-numeric:tabular-nums; }
+  .tgbox { display:grid; grid-template-columns:minmax(0,1fr) 150px; gap:10px; flex:1 1 0; min-height:80px; } .tgbox canvas { width:100%; height:100%; min-height:80px; } .tgk { font-size:12px; align-self:start; } .tgk div { display:flex; justify-content:space-between; gap:6px; padding:4px 0; border-bottom:1px solid #10294a; } .tgk span { color:var(--om); } .tgk b { font-variant-numeric:tabular-nums; }
   .rwl { font-size:12px; } .rwr { display:grid; grid-template-columns:96px 1fr 44px; align-items:center; gap:8px; padding:4px 0; } .rwr span { color:#aab9d6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .rwr b { text-align:right; font-variant-numeric:tabular-nums; } .rwb { height:8px; background:#10294a; border-radius:4px; overflow:hidden; } .rwb i { display:block; height:100%; } .rwb i.pos { background:var(--ook); } .rwb i.neg { background:var(--obad); }
   .simc { display:flex; align-items:center; gap:10px; flex-wrap:wrap; } .simc button, .simc select { background:#0a1730; color:#cfe3ff; border:1px solid var(--ob); border-radius:8px; padding:7px 16px; font-size:13px; cursor:pointer; } .simc button:hover { border-color:var(--oa); } .simc label { color:var(--om); font-size:12px; display:flex; align-items:center; gap:6px; } .simc select { padding:6px 8px; }
   /* panels of the Console layout */
   .dec { font-size:12px; } .dr { display:grid; grid-template-columns:70px 1fr 42px; align-items:center; gap:8px; padding:3px 0; } .dr span { color:#aab9d6; } .dr b { text-align:right; font-variant-numeric:tabular-nums; }
   .dbar { position:relative; height:8px; background:#10294a; border-radius:4px; overflow:hidden; } .dbar i { position:absolute; top:0; height:100%; } .dbar::after { content:""; position:absolute; left:50%; top:0; width:1px; height:100%; background:#2c4a73; }
-  .tsw { overflow:auto; flex:1 1 0; min-height:110px; } .tsw::-webkit-scrollbar { width:8px; } .tsw::-webkit-scrollbar-thumb { background:#1a3a63; border-radius:4px; }
+  .tsw { overflow:auto; flex:1 1 0; min-height:50px; } .tsw::-webkit-scrollbar { width:8px; } .tsw::-webkit-scrollbar-thumb { background:#1a3a63; border-radius:4px; }
   .tst { width:100%; border-collapse:collapse; font-size:11.5px; font-variant-numeric:tabular-nums; } .tst th { position:sticky; top:0; background:#0a1730; text-align:left; color:var(--om); font:600 10px system-ui; letter-spacing:.1em; text-transform:uppercase; padding:3px 6px; }
   .tst td { padding:3px 6px; border-top:1px solid #10294a; } .tst td:first-child { color:#6d86a8; font-family:Consolas,monospace; } .tst td:nth-child(3) { text-align:right; font-weight:600; color:#fff; } .tst td:last-child { color:var(--om); }
   /* the Deck layout: roomier panels, section labels, a strip of key readings, a phase timeline, gauges */
@@ -284,7 +284,7 @@
   .gr { display:grid; grid-template-columns:100px minmax(0,1fr) 78px; align-items:center; gap:10px; padding:3px 0; font-size:12px; } .gr > span { color:#aab9d6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .gr > b { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
   @media (max-width:1180px) { .ops-grid { grid-auto-rows:auto; } .ops-grid > .op { min-height:196px; } .ops-grid > .op.bare, .ops-grid > .op.slim { min-height:0; } .kpi { grid-template-columns:repeat(4, minmax(0,1fr)); } .gr { grid-template-columns:120px minmax(0,1fr) 100px; } }
   @media (max-width:700px) { .kpi { grid-template-columns:repeat(2, minmax(0,1fr)); } .phw { grid-template-columns:1fr; gap:10px; } .gr { grid-template-columns:100px minmax(0,1fr) 90px; } }
-  .cc { flex:1 1 auto; min-height:110px; } .cl { display:flex; flex-wrap:wrap; gap:3px 12px; margin-top:6px; font-size:10.5px; color:#9db3d3; } .cl span { display:inline-flex; align-items:center; gap:5px; white-space:nowrap; } .cl svg { width:24px; height:6px; } .cl i { font-style:normal; color:#5f7699; }
+  .cc { flex:1 1 0; min-height:50px; } .cl { display:flex; flex-wrap:wrap; gap:3px 12px; margin-top:6px; font-size:10.5px; color:#9db3d3; } .cl span { display:inline-flex; align-items:center; gap:5px; white-space:nowrap; } .cl svg { width:24px; height:6px; } .cl i { font-style:normal; color:#5f7699; }
   .gb { position:relative; height:9px; border-radius:5px; background:#10294a; } .gb i { position:absolute; top:0; height:100%; border-radius:5px; } .gb.c::after { content:""; position:absolute; left:50%; top:-2px; width:1px; height:13px; background:#2c4a73; } .gb u { position:absolute; top:-2px; width:2px; height:13px; background:#cfe3ff; opacity:.75; }
   /* key/value grids (Flight so far, All parameters) */
   .kvg { display:grid; grid-template-columns:repeat(var(--kc, 3), minmax(0,1fr)); gap:0 20px; font-size:11.5px; align-content:start; } .kvg > div { display:flex; justify-content:space-between; gap:8px; padding:2.5px 0; border-bottom:1px solid #10294a; }
@@ -294,14 +294,21 @@
   .pht { width:100%; border-collapse:collapse; margin-top:10px; font-size:11px; font-variant-numeric:tabular-nums; } .pht th { text-align:right; color:var(--om); font:600 9.5px system-ui; letter-spacing:.1em; text-transform:uppercase; padding:3px 5px; }
   .pht td { text-align:right; padding:3px 5px; border-top:1px solid #10294a; color:#b9cde8; } .pht th:first-child, .pht td:first-child { text-align:left; } .pht tr.now td { color:#fff; font-weight:600; } .pht tr.todo td { color:#4d6283; }
   .scr { flex-direction:row; flex-wrap:wrap; justify-content:center; gap:8px 18px; } .scl { width:auto; flex:1 1 160px; }
-  .envc { display:grid; grid-template-columns:1fr 1fr; gap:12px; flex:1 1 auto; min-height:120px; margin-top:10px; } .envc canvas { width:100%; height:100%; min-height:120px; }
+  .envc { display:grid; grid-template-columns:1fr 1fr; gap:12px; flex:1 1 0; min-height:60px; margin-top:10px; } .envc canvas { width:100%; height:100%; min-height:60px; }
   .seek { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; margin:12px 0 10px; } .seek input { flex:1 1 120px; min-width:0; accent-color:#38c7ff; } .seek span { font:11px Consolas,monospace; color:var(--om); white-space:nowrap; }
   .simc + .simc, .seek + .simc { margin-top:2px; } .simc button { padding:6px 12px; font-size:12px; }
   .keys { margin-top:12px; font-size:11px; line-height:2.1; color:#8fa6c8; } .keys kbd { display:inline-block; min-width:18px; text-align:center; padding:0 5px; margin:0 3px 0 9px; border:1px solid #2c4a73; border-radius:4px; background:#0a1730; font:600 10px Consolas,monospace; color:#cfe3ff; } .keys kbd + kbd { margin-left:0; }
-  .rcg { display:grid; grid-template-columns:minmax(150px,1fr) minmax(0,1.1fr); gap:16px; flex:1 1 auto; min-height:0; } .rcg canvas { width:100%; height:100%; min-height:170px; }
+  .rcg { display:grid; grid-template-columns:minmax(150px,1fr) minmax(0,1.1fr); gap:16px; flex:1 1 auto; min-height:0; } .rcg canvas { width:100%; height:100%; min-height:80px; }
   .ostrip { display:grid; grid-template-columns:repeat(20, minmax(0,1fr)); gap:3px; width:100%; margin-top:12px; } .ostrip i { display:block; height:10px; border-radius:2px; }
   .ops canvas { contain:size; }                              /* the drawing size follows the box; without this a canvas on a screen with a pixel ratio above 1 grows its row every frame */
   .vwtag:empty { display:none; }
+  /* rows: fixed heights with a pull tab in the gap under each (drag to resize, double-click to reset); a panel fits its row and scrolls if it must */
+  .ops-grid > .op { overflow:auto; scrollbar-width:thin; scrollbar-color:#1a3a63 transparent; } .ops-grid > .op::-webkit-scrollbar { width:6px; height:6px; } .ops-grid > .op::-webkit-scrollbar-thumb { background:#1a3a63; border-radius:3px; }
+  .ops-grid > .op.bare, .ops-grid > .op.slim { overflow:visible; }
+  .rgrip { align-self:end; height:12px; margin-bottom:-12px; position:relative; z-index:3; cursor:ns-resize; display:flex; align-items:center; justify-content:center; touch-action:none; }
+  .rgrip i { display:block; width:46px; height:4px; border-radius:3px; background:#24507f; opacity:.6; transition:opacity .15s, background .15s, width .15s; }
+  .rgrip:hover i, .rgrip.on i { opacity:1; background:#38c7ff; width:84px; } .rgrip:hover, .rgrip.on { background:linear-gradient(90deg, transparent, rgba(56,199,255,.10), transparent); }
+  @media (max-width:1180px) { .rgrip { display:none; } .ops-grid > .op { max-height:620px; } }
 </style>
 </head>
 <body>
@@ -463,6 +470,7 @@
       <div class="ops-pane" id="ops-settings"><div class="op"><h3>Settings</h3>
         <div class="ops-note"><b>This dock</b><br>It draws about 12 pictures a second, and only while it is on screen and this browser tab is visible. Switch it off here if the laptop needs every bit of power for something else.<br>
           <label><input type="checkbox" id="opsPause"> pause the monitoring ground (the main screen keeps running)</label></div>
+        <div class="ops-note" style="margin-top:14px"><b>Row heights</b><br>Drag the small tab under any row of the Overview to make that row taller or shorter; double-click a tab to put that row back. Your heights are remembered for each screen width.</div><div class="ops-btns"><button id="opsRowsReset">Reset all row heights</button></div>
         <div class="ops-note" style="margin-top:14px"><b>Simulator, training and models</b> are still set in the tabs under this dock. These buttons open them:</div>
         <div class="ops-btns"><button data-goto="startup">Startup</button><button data-goto="params">Parameters / Settings</button><button data-goto="ckpt">Checkpoints / Models</button><button data-goto="live">Live</button></div>
         <div class="ops-note">Not built yet: challenge sliders (crosswind, start fuel, controller gain), a booster cutaway, a reward heat-map and a thermal view. The simulator has no thermal model, so that view is left out.</div>
@@ -3934,7 +3942,7 @@ if (!RECP) requestAnimationFrame(loop);
 // ================================================================ Monitoring ground: the dock under the main screen.
 // Read-only: it reads what the main screen already has (the selected lander's frames, the network's numbers, the terminal log, the charts) and draws it in its own tabs.
 // It draws ~12 pictures a second, and only while it is on screen and the page is visible. Not started in Showcase / Recorder.
-const OPS = { tab: 'overview', src: 'cam', pr: 'eng', ts: 'all', layout: 'deck', panels: [], vis: false, paused: false, done: [], t: 0, html: {}, last: null };
+const OPS = { tab: 'overview', src: 'cam', pr: 'eng', ts: 'all', layout: 'deck', rowH: {}, rowKey: '', hs: null, panels: [], vis: false, paused: false, done: [], t: 0, html: {}, last: null };
 const OPS_FINAL_H = 150;                                   // display label only: below this height the descent is called "final"
 const OPS_TILT_OK = 0.15;                                  // the paper's success rule: tilt at rest of at most 0.15 rad
 const OPS_PH = [['ENTRY', 'Re-entry fall'], ['IGNITION', 'Engine start'], ['BURN', 'Braking burn'], ['FINAL', 'Final descent'], ['LANDED', 'Touchdown']];
@@ -4317,19 +4325,19 @@ OPS_LAYOUTS.deck = { label: 'Deck', dense: true, tiers: {
       'vw vw vw vw vw fp fp fp fp sy sy sy', 'vw vw vw vw vw gd gd gd gd mg mg mg', 's2 s2 s2 s2 s2 s2 s2 s2 s2 s2 s2 s2', 'tg tg tg tg ac ac ac ac pw pw pw pw',
       's3 s3 s3 s3 s3 s3 s3 s3 s3 s3 s3 s3', 'nn nn nn nn de de de at at pr pr pr', 's4 s4 s4 s4 s4 s4 s4 s4 s4 s4 s4 s4', 'ts ts ts ts ts rw rw rw lp lp lp lp',
       'sq sq sq sq sc sc sc en en en sim sim', 'lg lg lg lg rc rc rc tr tr tr pf pf'],
-    heights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '250px', 'auto', '262px', 'auto', '272px', '200px', '240px'],
+    heights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '250px', 'auto', '262px', 'auto', '300px', '280px', '300px'],
     show: ['kp kp kp kp kp kp kp kp kp kp kp kp', 'ph ph ph ph ph ph ph ph ph ph ph ph', 's1 s1 s1 s1 s1 s1 s1 s1 s1 s1 s1 s1',
       'vw vw vw vw vw fp fp fp fp sy sy sy', 'vw vw vw vw vw gd gd gd gd mg mg mg', 's2 s2 s2 s2 s2 s2 s2 s2 s2 s2 s2 s2', 'tg tg tg tg ac ac ac ac pw pw pw pw',
       's3 s3 s3 s3 s3 s3 s3 s3 s3 s3 s3 s3', 'nn nn nn nn de de de at at pr pr pr', 's4 s4 s4 s4 s4 s4 s4 s4 s4 s4 s4 s4', 'ts ts ts ts ts rw rw rw lp lp lp lp',
       'sq sq sq sq sc sc sc en en en sim sim', 'lg lg lg lg lg lg rc rc rc rc rc rc'],
-    showHeights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '250px', 'auto', '262px', 'auto', '272px', '200px', '240px'] },
+    showHeights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '250px', 'auto', '262px', 'auto', '300px', '280px', '300px'] },
   wide: { cols: 24, kpCount: 12,                                          // from about 1700 px of dock width (a big screen, or a browser zoomed out): twice the columns and the extra panels
     areas: ['@kp*24', '@ph*24', '@s1*24', '@vw*8 @fp*6 @gd*6 @sy*4', '@vw*8 @ac*6 @pw*6 @mg*4', '@s2*24', '@tg*6 @fo*6 @ey*6 @rh*6', '@s3*24', '@nn*6 @de*4 @at*3 @pr*4 @fs*7',
       '@s4*24', '@ts*6 @pg*8 @rw*4 @lp*6', '@sq*6 @sc*4 @en*4 @sim*4 @ls*6', '@lg*7 @rc*5 @tr*6 @pf*6'].map(opsExpand),
-    heights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '262px', 'auto', '270px', 'auto', '280px', '220px', '240px'],
+    heights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '262px', 'auto', '300px', 'auto', '300px', '320px', '300px'],
     show: ['@kp*24', '@ph*24', '@s1*24', '@vw*8 @fp*6 @gd*6 @sy*4', '@vw*8 @ac*6 @pw*6 @mg*4', '@s2*24', '@tg*6 @fo*6 @ey*6 @rh*6', '@s3*24', '@nn*6 @de*4 @at*3 @pr*4 @fs*7',
       '@s4*24', '@ts*6 @pg*8 @rw*4 @lp*6', '@sq*6 @sc*4 @en*4 @sim*4 @ls*6', '@lg*14 @rc*10'].map(opsExpand),
-    showHeights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '262px', 'auto', '270px', 'auto', '280px', '220px', '240px'] } } };
+    showHeights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '262px', 'auto', '300px', 'auto', '300px', '320px', '300px'] } } };
 // ---- fuller panels: each one uses its whole height (a phase table, the landing rules live, profiles against altitude, playback controls, reward by phase,
 // a log-scale approach view, a drawing of the stage, an outcome strip, an engine and thruster timeline)
 function opsPhaseRows(st) {                                               // [phase index, first frame, frame where the next phase starts (or the shown frame)]; -1 when not started
@@ -4521,15 +4529,26 @@ function opsBuildLayout(name) {                            // put the panels of 
   OPS.layout = OPS_LAYOUTS[name] ? name : 'deck'; OPS.tier = tier; OPS.panels = []; OPS.html = {}; grid.innerHTML = '';
   const hs = SHOW && T.showHeights ? T.showHeights : T.heights; grid.className = 'ops-grid' + (L.dense ? ' dense' : '');
   grid.style.setProperty('--cols', T.cols || 12); grid.style.gridTemplateAreas = rows.map(r => `"${r}"`).join(' ');
-  grid.style.gridTemplateRows = hs ? hs.map(v => v === 'auto' ? 'auto' : `minmax(${v}, auto)`).join(' ') : `repeat(${rows.length}, minmax(196px, auto))`;
+  OPS.rowKey = OPS.layout + ':' + tier + (SHOW ? ':show' : ''); OPS.hs = hs; opsApplyRows();
   for (const id of [...new Set(rows.join(' ').split(/\s+/))]) {
     const tpl = $('opsT-' + id); if (!tpl || !OPS_PANELS[id]) continue;
     const el = tpl.content.firstElementChild.cloneNode(true); el.style.gridArea = id; if (OPS_PANELS[id].wide) el.classList.add('wide');
     grid.appendChild(el); OPS.panels.push(id); if (OPS_PANELS[id].init) OPS_PANELS[id].init(el, T);
   }
+  if (hs) rows.forEach((r, k) => {                        // the pull tab sits in the gap under its row
+    if (hs[k] === 'auto') return;
+    const g = document.createElement('div'); g.className = 'rgrip'; g.dataset.row = k; g.style.gridRow = `${k + 1} / ${k + 2}`; g.style.gridColumn = '1 / -1';
+    g.title = 'Drag to make this row taller or shorter. Double-click: back to the default.'; g.innerHTML = '<i></i>'; grid.appendChild(g);
+  });
   opsLayoutButtons(); opsMarkTabs('src', OPS.src); OPS_TABKEYS.forEach(k => opsMarkTabs(k, OPS[k]));
   try { localStorage.setItem('spacexperiment.opslayout', OPS.layout); } catch (e) { /* storage may be blocked */ }
   OPS.t = 0; OPS.slowT = 0;
+}
+function opsRowStore() { try { return JSON.parse(localStorage.getItem('spacexperiment.opsrows') || '{}') || {}; } catch (e) { return {}; } }
+function opsRowSave() { try { localStorage.setItem('spacexperiment.opsrows', JSON.stringify(OPS.rowH)); } catch (e) { /* storage may be blocked */ } }
+function opsApplyRows() {                                 // fixed row heights (the layout's, or what you dragged them to): a panel's content fits its row instead of growing it
+  const mine = OPS.rowH[OPS.rowKey] || {};
+  $('opsGrid').style.gridTemplateRows = OPS.hs ? OPS.hs.map((v, k) => v === 'auto' ? 'auto' : (mine[k] ? mine[k] + 'px' : v)).join(' ') : 'none';
 }
 function opsLayoutButtons() { $('opsLayouts').style.display = Object.keys(OPS_LAYOUTS).length > 1 ? '' : 'none'; $('opsLayouts').innerHTML = Object.entries(OPS_LAYOUTS).map(([k, v]) => `<button data-layout="${k}" class="${k === OPS.layout ? 'on' : ''}">${v.label}</button>`).join(''); }
 function opsWire() {                                       // one delegated listener: the panels are rebuilt whenever the layout changes
@@ -4539,6 +4558,7 @@ function opsWire() {                                       // one delegated list
     else if (OPS_TABKEYS.some(k => b.dataset[k])) { const k = OPS_TABKEYS.find(k => b.dataset[k]); OPS[k] = b.dataset[k]; opsMarkTabs(k, OPS[k]); }
     else if (b.dataset.layout) opsBuildLayout(b.dataset.layout);
     else if (b.id === 'opsSimPause') togglePause(false);
+    else if (b.id === 'opsRowsReset') { OPS.rowH = {}; opsRowSave(); opsApplyRows(); OPS.slowT = 0; }
     else if (b.id === 'opsSimRestart') opsSeek(0);
     else if (b.id === 'opsSimEnd') opsSeek(1);
     else if (b.id === 'opsSimFollow') $('followBtn').click();
@@ -4546,6 +4566,15 @@ function opsWire() {                                       // one delegated list
     else if (b.id === 'opsSimPanels') document.body.classList.toggle('nopanels');
   });
   $('ops').addEventListener('change', e => { if (e.target.id === 'opsSimSpeed') $('speed').value = e.target.value; });
+  $('ops').addEventListener('pointerdown', e => {          // drag a pull tab: the row follows the pointer (at least 60 px)
+    const g = e.target.closest('.rgrip'); if (!g) return;
+    e.preventDefault(); const k = +g.dataset.row, h0 = parseFloat(getComputedStyle($('opsGrid')).gridTemplateRows.split(' ')[k]), y0 = e.clientY;
+    g.setPointerCapture(e.pointerId); g.classList.add('on');
+    const move = ev => { const mine = OPS.rowH[OPS.rowKey] || (OPS.rowH[OPS.rowKey] = {}); mine[k] = Math.round(Math.max(60, Math.min(1400, h0 + ev.clientY - y0))); opsApplyRows(); OPS.slowT = 0; };
+    const up = () => { g.removeEventListener('pointermove', move); g.removeEventListener('pointerup', up); g.removeEventListener('pointercancel', up); g.classList.remove('on'); opsRowSave(); };
+    g.addEventListener('pointermove', move); g.addEventListener('pointerup', up); g.addEventListener('pointercancel', up);
+  });
+  $('ops').addEventListener('dblclick', e => { const g = e.target.closest('.rgrip'); if (!g) return; const mine = OPS.rowH[OPS.rowKey]; if (mine) delete mine[+g.dataset.row]; opsApplyRows(); opsRowSave(); OPS.slowT = 0; });
   $('ops').addEventListener('input', e => { if (e.target.id === 'opsSimSeek') opsSeek(+e.target.value / 1000); });
 }
 function opsOverview(st) {
@@ -4649,6 +4678,7 @@ function opsInit() {
   const _landPush = landPush;                              // count finished landings for the "Policy performance" panel, then do what the main screen always did
   landPush = function (s) { try { const r = s.ep && s.ep.result; if (r) { OPS.done.push({ ok: !!r.success, merit: +r.merit || 0, speed: +r.speed, dist: +r.dist, end: r.end }); if (OPS.done.length > 100) OPS.done.shift(); } } catch (e) { /* never block the main screen */ } return _landPush(s); };
   new IntersectionObserver(es => { OPS.vis = es[0].isIntersecting; }, { threshold: 0.02 }).observe($('ops'));
+  OPS.rowH = opsRowStore();
   let saved = 'deck'; try { saved = localStorage.getItem('spacexperiment.opslayout') || 'deck'; } catch (e) { /* storage may be blocked */ }
   opsBuildLayout(OPS_LAYOUTS[saved] ? saved : 'deck');
   let rz = 0; new ResizeObserver(() => { clearTimeout(rz); rz = setTimeout(() => { if (opsTier() !== OPS.tier) opsBuildLayout(OPS.layout); }, 150); }).observe($('opsGrid').parentElement);
