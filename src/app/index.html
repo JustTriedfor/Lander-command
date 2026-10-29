@@ -1026,18 +1026,32 @@ function plumeGeom(cur) {
 
 // ---- anamorphic lens flare: a bright light source (the main engine, an RCS thruster) gets a long horizontal blue streak and a soft blue halo, like a cinema lens with anamorphic glass
 const FLARE_STRENGTH = 0.55;                                                              // 1 = the full-strength flare
+// The four shapes are drawn sharp into a scratch canvas just big enough for this flare, that is blurred once into a second one, and the result is added to the picture.
+// (Blurring each shape straight onto the picture made the browser blur up to the whole 1920 x 1080 canvas four times per flare, every frame: the page froze when the
+// engine lit.) Blur is linear and the flare is added ('lighter'), so the result is the same, within a few levels of 255.
+const ANAM = { A: document.createElement('canvas'), B: document.createElement('canvas') };
 function anam(ctx, x, y, len, th, a, warm = false) {                                        // warm = the engine's red-orange flare; otherwise the cool blue one (RCS)
   a *= FLARE_STRENGTH; len *= 0.5 + 0.5 * FLARE_STRENGTH;
   if (a <= 0.01 || len < 2) return;
   const C = warm ? { o: [255, 70, 15], m: [255, 120, 40], c: [255, 205, 150], h: [255, 110, 30] } : { o: [40, 90, 255], m: [70, 130, 255], c: [150, 200, 255], h: [120, 175, 255] }, rgb = (v, al) => `rgba(${v[0]},${v[1]},${v[2]},${al})`;
-  ctx.save(); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'lighter'; ctx.filter = `blur(${Math.max(2, th * 0.9 + len * 0.012).toFixed(1)}px)`; th *= 1.5; ctx.translate(x, y);       // soft: blurred, and thicker than a hard line
-  const lg = (L, c0, c1, c2) => { const gr = ctx.createLinearGradient(-L, 0, L, 0); gr.addColorStop(0, c0); gr.addColorStop(0.35, c1); gr.addColorStop(0.5, c2); gr.addColorStop(0.65, c1); gr.addColorStop(1, c0); return gr; };
-  ctx.fillStyle = lg(len * 1.6, rgb(C.o, 0), rgb(C.m, 0.22 * a), rgb(C.c, 0.5 * a)); ctx.beginPath(); ctx.ellipse(0, 0, len * 1.6, th * 2.6, 0, 0, 7); ctx.fill();            // the wide faint streak
-  ctx.fillStyle = lg(len, rgb(C.m, 0), rgb(C.c, 0.5 * a), warm ? `rgba(255,236,210,${a})` : `rgba(235,246,255,${a})`); ctx.beginPath(); ctx.ellipse(0, 0, len, th, 0, 0, 7); ctx.fill();   // the bright streak
-  ctx.fillStyle = lg(len * 0.45, 'rgba(255,255,255,0)', `rgba(255,255,255,${0.55 * a})`, `rgba(255,255,255,${a})`); ctx.beginPath(); ctx.ellipse(0, 0, len * 0.45, th * 0.42, 0, 0, 7); ctx.fill();   // its white core
-  ctx.scale(2.6, 1); const R = Math.max(4, th * 7), gr2 = ctx.createRadialGradient(0, 0, 0, 0, 0, R); gr2.addColorStop(0, rgb(C.h, 0.35 * a)); gr2.addColorStop(1, rgb(C.o, 0)); ctx.fillStyle = gr2; ctx.beginPath(); ctx.arc(0, 0, R, 0, 7); ctx.fill();      // a soft halo, wider than tall
-  ctx.restore();
+  const blur = Math.max(2, th * 0.9 + len * 0.012); th *= 1.5;                               // soft: blurred, and thicker than a hard line
+  const R = Math.max(4, th * 7), hw = Math.ceil(Math.max(len * 1.6, R * 2.6) + blur * 3), hh = Math.ceil(Math.max(th * 2.6, R) + blur * 3), w = 2 * hw, h = 2 * hh;      // the flare's half size, with room for the blur
+  const { A, B } = ANAM; if (A.width < w || A.height < h) { A.width = B.width = Math.max(A.width, w); A.height = B.height = Math.max(A.height, h); }
+  const xa = A.getContext('2d'); xa.setTransform(1, 0, 0, 1, 0, 0); xa.globalCompositeOperation = 'source-over'; xa.globalAlpha = 1; xa.clearRect(0, 0, w, h);
+  xa.globalCompositeOperation = 'lighter'; xa.globalAlpha = 0.5; xa.translate(hw, hh);                                 // at half strength, added twice below: the white-hot core no longer saturates before the blur
+  const lg = (L, c0, c1, c2) => { const gr = xa.createLinearGradient(-L, 0, L, 0); gr.addColorStop(0, c0); gr.addColorStop(0.35, c1); gr.addColorStop(0.5, c2); gr.addColorStop(0.65, c1); gr.addColorStop(1, c0); return gr; };
+  xa.fillStyle = lg(len * 1.6, rgb(C.o, 0), rgb(C.m, 0.22 * a), rgb(C.c, 0.5 * a)); xa.beginPath(); xa.ellipse(0, 0, len * 1.6, th * 2.6, 0, 0, 7); xa.fill();            // the wide faint streak
+  xa.fillStyle = lg(len, rgb(C.m, 0), rgb(C.c, 0.5 * a), warm ? `rgba(255,236,210,${a})` : `rgba(235,246,255,${a})`); xa.beginPath(); xa.ellipse(0, 0, len, th, 0, 0, 7); xa.fill();   // the bright streak
+  xa.fillStyle = lg(len * 0.45, 'rgba(255,255,255,0)', `rgba(255,255,255,${0.55 * a})`, `rgba(255,255,255,${a})`); xa.beginPath(); xa.ellipse(0, 0, len * 0.45, th * 0.42, 0, 0, 7); xa.fill();   // its white core
+  xa.scale(2.6, 1); const gr2 = xa.createRadialGradient(0, 0, 0, 0, 0, R); gr2.addColorStop(0, rgb(C.h, 0.35 * a)); gr2.addColorStop(1, rgb(C.o, 0)); xa.fillStyle = gr2; xa.beginPath(); xa.arc(0, 0, R, 0, 7); xa.fill();      // a soft halo, wider than tall
+  const xb = B.getContext('2d'); xb.setTransform(1, 0, 0, 1, 0, 0); xb.globalCompositeOperation = 'source-over'; xb.globalAlpha = 1; xb.clearRect(0, 0, w, h);
+  xb.filter = `blur(${blur.toFixed(1)}px)`; xb.drawImage(A, 0, 0, w, h, 0, 0, w, h); xb.filter = 'none';
+  ctx.save(); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'lighter'; ctx.drawImage(B, 0, 0, w, h, x - hw, y - hh, w, h); ctx.drawImage(B, 0, 0, w, h, x - hw, y - hh, w, h); ctx.restore();
 }
+(window.requestIdleCallback || setTimeout)(() => {                                         // draw both flares once, unseen, when the page has loaded: the graphics card prepares the blur and
+  try { const c = document.createElement('canvas'); c.width = c.height = 600; const x = c.getContext('2d'); x.fillRect(0, 0, 600, 600);       // gradient programs now, not in the middle of the first burn
+    anam(x, 300, 300, 260, 6, 1, true); anam(x, 300, 300, 40, 2, 0.6); x.getImageData(0, 0, 1, 1); } catch (e) { /* only a head start */ }
+});
 function flares(cur, al) {                                                                 // the flares of one lander in the main view (screen size, so they are visible from far away)
   if (!VIS.flames) return;
   const G = plumeGeom(cur), fl = 0.85 + 0.15 * Math.random();
@@ -1787,12 +1801,16 @@ $('miniToggle').onclick = () => {
 // ---- flight terminal: a live command log of the selected lander (what its engines are being told to do)
 const termLog = document.getElementById('termLog'), TERM_MAX = 400;
 let termLast = null;                                   // the last command line, so quick repeats become "x3" instead of a flood
+function followLog(box) {                             // keep a log box on its newest line unless you scrolled up: the flag is kept by its scroll events, and the scroll happens once per frame,
+  if (!box._follow) { box._follow = { on: true, pend: false }; box.addEventListener('scroll', () => { box._follow.on = box.scrollTop + box.clientHeight >= box.scrollHeight - 8; }, { passive: true }); }
+  const F = box._follow; if (!F.on || F.pend) return;  // so adding lines never makes the browser lay out the page again in the middle of a frame
+  F.pend = true; requestAnimationFrame(() => { F.pend = false; box.scrollTop = box.scrollHeight; });
+}
 function termAppend(html, cls = '') {
   const d = document.createElement('div'); d.className = 'tl ' + cls; d.innerHTML = html;
-  const stick = termLog.scrollTop + termLog.clientHeight >= termLog.scrollHeight - 8;          // keep following unless you scrolled up
   termLog.appendChild(d);
   while (termLog.children.length > TERM_MAX) termLog.firstChild.remove();
-  if (stick) termLog.scrollTop = termLog.scrollHeight;
+  followLog(termLog);
   return d;
 }
 function termPrompt(k, text) { termAppend(`PS lander-${k + 1}&gt; <span class="cm">${text}</span>`); termLast = null; }
@@ -3153,6 +3171,7 @@ function drawScatter() {
 }
 
 const BAND_LABELS = ['<30', '30\u201380', '80\u2013160', '160\u2013320', '320\u2013640', '640\u20131.2k', '1.2\u20132.2k', '>2.2k'];
+const HEATKEY = {};                                                             // the heat map's colour key, drawn once per width (it was one rectangle per pixel, every redraw)
 function drawHeat() {
   const P = GPN.heat, g = P.g; frame0(P);
   const rows = lastProgress.filter(r => r.bands), w = P.w, h = P.h, L = 52, R = 10, T = 14, B = 52, pw = w - L - R, ph = h - T - B, nb = 8, ch = ph / nb;
@@ -3167,12 +3186,127 @@ function drawHeat() {
   BAND_LABELS.forEach((lb, b) => g.fillText(lb, L - 6, T + ph - (b + 0.5) * ch + 4));
   g.textAlign = 'center'; g.fillStyle = '#6a739c'; g.fillText('altitude band (m)', 24, T - 2); g.fillText('training steps \u2192 ' + Math.round(rows[rows.length - 1].t / 1000) + 'k', L + pw / 2, T + ph + 16);
   const lx = L, ly = T + ph + 26, lw = pw;                                                   // colour key
-  for (let i = 0; i < lw; i++) { const c = ratioColor(i / lw * 3); g.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`; g.fillRect(lx + i, ly, 2, 9); }
+  if (HEATKEY.w !== lw) { const c = HEATKEY.c = document.createElement('canvas'), x = c.getContext('2d'); c.width = Math.ceil(lw) + 2; c.height = 9; HEATKEY.w = lw;
+    for (let i = 0; i < lw; i++) { const k = ratioColor(i / lw * 3); x.fillStyle = `rgb(${k[0]},${k[1]},${k[2]})`; x.fillRect(i, 0, 2, 9); } }
+  g.drawImage(HEATKEY.c, lx, ly);
   g.fillStyle = '#8791bb'; g.font = '600 11px system-ui'; g.textAlign = 'left'; g.fillText('slower than the safe envelope', lx, ly + 22); g.textAlign = 'center'; g.fillText('on the envelope', lx + lw / 3, ly + 22); g.textAlign = 'right'; g.fillText('3x too fast', lx + lw, ly + 22);
   g.textAlign = 'left';
 }
 
 const BND = { off: document.createElement('canvas'), key: '', nx: 30, ny: 24 };
+// The decision boundary's grid, worked out in a background worker so the page never waits for it: for a 256-wide network one grid is about 47 million
+// multiply-adds, which froze the page for over half a second each time when it ran here. The worker runs it on the graphics card (one fragment per grid
+// cell runs both hidden layers; the weights live in float textures, uploaded once per network) and falls back to plain loops on its own thread.
+// ?cpubnd in the address keeps the worker on its loops; with no worker at all (an old browser) drawBoundary runs the loops itself.
+function bndWorker(noGL) {                                                       // runs inside the worker: its source is this function's text, so it uses nothing from the page
+  let net = null, G = null;
+  const FS = `#version 300 es
+precision highp float; precision highp int; precision highp sampler2D;
+uniform sampler2D uA, uW2, uB; uniform int uN1, uN2; uniform float uB3; uniform vec2 uGrid, uSpan;
+out vec4 outV;
+const int MAXN = 512;
+float th(float x) { return tanh(clamp(x, -12.0, 12.0)); }
+void main() {
+  float o1 = (gl_FragCoord.y / uGrid.y) * uSpan.x, o3 = -(gl_FragCoord.x / uGrid.x) * uSpan.y;     // gl_FragCoord is the cell centre (i + 0.5)
+  float h1[MAXN];
+  for (int j = 0; j < MAXN; j++) { if (j >= uN1) break; h1[j] = th(texelFetch(uA, ivec2(j, 0), 0).r + texelFetch(uA, ivec2(j, 1), 0).r * o1 + texelFetch(uA, ivec2(j, 2), 0).r * o3); }
+  float v = uB3;
+  for (int k = 0; k < MAXN; k++) {
+    if (k >= uN2) break;
+    float t = texelFetch(uB, ivec2(k, 0), 0).r;
+    for (int j = 0; j < MAXN; j++) { if (j >= uN1) break; t += texelFetch(uW2, ivec2(j, k), 0).r * h1[j]; }
+    v += texelFetch(uB, ivec2(k, 1), 0).r * th(t);
+  }
+  outV = vec4(v, 0.0, 0.0, 1.0);
+}`;
+  function setupGL(nx, ny) {
+    if (noGL || typeof OffscreenCanvas === 'undefined') return null;
+    const gl = new OffscreenCanvas(nx, ny).getContext('webgl2', { antialias: false, depth: false, stencil: false });
+    if (!gl || !gl.getExtension('EXT_color_buffer_float')) return null;
+    const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+    const prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, '#version 300 es\nin vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }')); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog); if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+    const vao = gl.createVertexArray(); gl.bindVertexArray(vao); gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const tex = () => { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v); return t; };
+    const out = tex(); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, nx, ny, 0, gl.RGBA, gl.FLOAT, null);
+    const fbo = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fbo); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, out, 0);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) return null;
+    const U = {}; for (const n of ['uA', 'uW2', 'uB', 'uN1', 'uN2', 'uB3', 'uGrid', 'uSpan']) U[n] = gl.getUniformLocation(prog, n);
+    return { gl, prog, vao, fbo, U, nx, ny, tA: tex(), tW2: tex(), tB: tex(), net: null, px: new Float32Array(nx * ny * 4) };
+  }
+  function runGL(r) {
+    const { n1, n2 } = net; if (n1 > 512 || n2 > 512) return null;
+    if (!G || G.nx !== r.nx || G.ny !== r.ny) G = setupGL(r.nx, r.ny);
+    if (!G) return null;
+    const gl = G.gl, up = (t, w, h, data) => { gl.bindTexture(gl.TEXTURE_2D, t); gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, w, h, 0, gl.RED, gl.FLOAT, data); };
+    if (G.net !== net) {                                                         // a new network: its weights go up once
+      up(G.tW2, n1, n2, net.w2);
+      const B = new Float32Array(n2 * 2); B.set(net.b2); B.set(net.w3, n2); up(G.tB, n2, 2, B);
+      G.net = net;
+    }
+    const A = new Float32Array(n1 * 3); A.set(r.base); A.set(net.c1, n1); A.set(net.c3, 2 * n1); up(G.tA, n1, 3, A);
+    gl.useProgram(G.prog); gl.bindVertexArray(G.vao); gl.bindFramebuffer(gl.FRAMEBUFFER, G.fbo); gl.viewport(0, 0, r.nx, r.ny);
+    [[G.tA, 'uA'], [G.tW2, 'uW2'], [G.tB, 'uB']].forEach(([t, n], i) => { gl.activeTexture(gl.TEXTURE0 + i); gl.bindTexture(gl.TEXTURE_2D, t); gl.uniform1i(G.U[n], i); });
+    gl.uniform1i(G.U.uN1, n1); gl.uniform1i(G.U.uN2, n2); gl.uniform1f(G.U.uB3, net.b3); gl.uniform2f(G.U.uGrid, r.nx, r.ny); gl.uniform2f(G.U.uSpan, r.spanH, r.spanV);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.readPixels(0, 0, r.nx, r.ny, gl.RGBA, gl.FLOAT, G.px);                   // row 0 is the bottom row = the lowest altitude, as in the loops below
+    const field = new Float32Array(r.nx * r.ny); for (let i = 0; i < field.length; i++) field[i] = G.px[i * 4];
+    return field;
+  }
+  function runCPU(r) {
+    const { n1, n2, c1, c3, w2, b2, w3, b3 } = net, { nx, ny, base } = r, h1 = new Float32Array(n1), field = new Float32Array(nx * ny);
+    for (let iy = 0; iy < ny; iy++) for (let ix = 0; ix < nx; ix++) {
+      const o1 = (iy + 0.5) / ny * r.spanH, o3 = -(ix + 0.5) / nx * r.spanV;
+      for (let j = 0; j < n1; j++) h1[j] = Math.tanh(base[j] + c1[j] * o1 + c3[j] * o3);
+      let out = b3;
+      for (let k = 0; k < n2; k++) { let t = b2[k]; const row = k * n1; for (let j = 0; j < n1; j++) t += w2[row + j] * h1[j]; out += w3[k] * Math.tanh(t); }
+      field[iy * nx + ix] = out;
+    }
+    return field;
+  }
+  onmessage = e => {
+    const m = e.data;
+    if (m.net) net = m.net;
+    if (m.run && net) {
+      let field = null, gpu = false, glErr = null;
+      try { field = runGL(m.run); gpu = !!field; } catch (err) { G = null; noGL = true; glErr = String(err && err.message || err); }
+      if (!field) field = runCPU(m.run);
+      postMessage({ field, gpu, glErr }, [field.buffer]);
+    }
+  };
+}
+const BNDW = (() => {                                                            // the page's side: at most one grid in the worker at a time; a newer request waits for it (older waiting ones are dropped)
+  try {
+    const src = `(${bndWorker.toString()})(${new URLSearchParams(location.search).has('cpubnd')})`;
+    const o = { w: new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' }))), busy: false, next: null, field: null, net: null, gpu: null, failed: false };
+    o.w.onmessage = e => { o.busy = false; o.field = e.data.field; o.gpu = e.data.gpu; if (e.data.glErr) console.warn('decision boundary: no graphics card in the worker, using its CPU loop:', e.data.glErr); if (o.next) { const r = o.next; o.next = null; o.busy = true; o.w.postMessage({ run: r }); } };
+    o.w.onerror = e => { o.failed = true; console.warn('decision boundary: worker failed, computing it on the page:', e.message); };
+    return o;
+  } catch (e) { return null; }
+})();
+function bndStart(a, base, ni, n1, n2, spanH, spanV) {                           // ask the worker for a new grid (spanH, spanV: its altitude and descent-speed ranges in the network's own scaled units); false = no worker
+  const W = BNDW; if (!W || W.failed) return false;
+  if (W.net !== a) {                                                             // a new network: its weights go over once
+    const c1 = new Float32Array(n1), c3 = new Float32Array(n1); for (let j = 0; j < n1; j++) { c1[j] = a.w1[j * ni + 1]; c3[j] = a.w1[j * ni + 3]; }
+    W.w.postMessage({ net: { n1, n2, c1, c3, w2: Float32Array.from(a.w2), b2: Float32Array.from(a.b2), w3: Float32Array.from(a.w3.slice(0, n2)), b3: a.b3[0] } }); W.net = a;      // w3, b3: the main-engine output's row only
+  }
+  const r = { base, spanH, spanV, nx: BND.nx, ny: BND.ny };
+  if (W.busy) W.next = r; else { W.busy = true; W.w.postMessage({ run: r }); }
+  return true;
+}
+function bndPoll() { const W = BNDW; if (!W || !W.field) return null; const f = W.field; W.field = null; return f; }     // the newest grid the worker has finished (once), or null
+function bndPaint(field) {                                                      // the grid as a small picture (bright = engine on), kept for drawBoundary
+  const { nx, ny } = BND, oc = BND.off; oc.width = nx; oc.height = ny; const og = oc.getContext('2d'), img = og.createImageData(nx, ny);
+  for (let iy = 0; iy < ny; iy++) for (let ix = 0; ix < nx; ix++) {
+    const v = field[iy * nx + ix], o = ((ny - 1 - iy) * nx + ix) * 4;
+    let c; if (v <= -0.5) c = [14 + 10 * (1 + Math.max(-1, v)), 22 + 14 * (1 + Math.max(-1, v)), 52 + 20 * (1 + Math.max(-1, v))]; else { const t = Math.min(1, (v + 0.5) / 1.5); c = lerpC([196, 78, 28], [255, 242, 206], t); }
+    img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+  }
+  og.putImageData(img, 0, 0); BND.field = field;
+}
 function drawBoundary() {
   const P = GPN.bnd, g = P.g, s = frame0(P), w = P.w, h = P.h, L = 50, R = 12, T = 14, B = 52, pw = w - L - R, ph = h - T - B;
   const n = actAt(s);
@@ -3186,27 +3320,24 @@ function drawBoundary() {
     BND.key = key; BND.t = now; BND.id = s.ep.id;
     const x0 = n.x, W1 = a.w1, W2 = a.w2, W3 = a.w3, b1 = a.b1, b2 = a.b2, b3 = a.b3, sc = a.scales, ni = n.ni, n1 = n.n1, n2 = n.n2;
     const base = new Float32Array(n1); for (let j = 0; j < n1; j++) { let t = b1[j]; for (let i = 0; i < ni; i++) if (i !== 1 && i !== 3) t += W1[j * ni + i] * x0[i]; base[j] = t; }
-    const h1 = new Float32Array(n1), field = new Float32Array(nx * ny);
-    for (let iy = 0; iy < ny; iy++) for (let ix = 0; ix < nx; ix++) {
-      const o1 = ((iy + 0.5) / ny * hMax) / sc.y, o3 = -((ix + 0.5) / nx * vMax) / sc.vy;
-      for (let j = 0; j < n1; j++) h1[j] = Math.tanh(base[j] + W1[j * ni + 1] * o1 + W1[j * ni + 3] * o3);
-      let out = b3[0];
-      for (let k = 0; k < n2; k++) { let t = b2[k]; const row = k * n1; for (let j = 0; j < n1; j++) t += W2[row + j] * h1[j]; out += W3[k] * Math.tanh(t); }
-      field[iy * nx + ix] = out;
+    if (!bndStart(a, base, ni, n1, n2, hMax / sc.y, vMax / sc.vy)) {                                // in the background worker when there is one: the grid arrives a little later
+      const h1 = new Float32Array(n1), field = new Float32Array(nx * ny);                             // (this loop, here on the page, takes well over half a second for a 256-wide network)
+      for (let iy = 0; iy < ny; iy++) for (let ix = 0; ix < nx; ix++) {
+        const o1 = ((iy + 0.5) / ny * hMax) / sc.y, o3 = -((ix + 0.5) / nx * vMax) / sc.vy;
+        for (let j = 0; j < n1; j++) h1[j] = Math.tanh(base[j] + W1[j * ni + 1] * o1 + W1[j * ni + 3] * o3);
+        let out = b3[0];
+        for (let k = 0; k < n2; k++) { let t = b2[k]; const row = k * n1; for (let j = 0; j < n1; j++) t += W2[row + j] * h1[j]; out += W3[k] * Math.tanh(t); }
+        field[iy * nx + ix] = out;
+      }
+      bndPaint(field);
     }
-    const oc = BND.off; oc.width = nx; oc.height = ny; const og = oc.getContext('2d'), img = og.createImageData(nx, ny);
-    for (let iy = 0; iy < ny; iy++) for (let ix = 0; ix < nx; ix++) {
-      const v = field[iy * nx + ix], o = ((ny - 1 - iy) * nx + ix) * 4;
-      let c; if (v <= -0.5) c = [14 + 10 * (1 + Math.max(-1, v)), 22 + 14 * (1 + Math.max(-1, v)), 52 + 20 * (1 + Math.max(-1, v))]; else { const t = Math.min(1, (v + 0.5) / 1.5); c = lerpC([196, 78, 28], [255, 242, 206], t); }
-      img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
-    }
-    og.putImageData(img, 0, 0); BND.field = field;
   }
+  { const f = bndPoll(); if (f) bndPaint(f); }
   const px = v => L + Math.min(Math.max(v, 0), vMax) / vMax * pw, py = hh => T + ph - hh / hMax * ph;
   g.imageSmoothingEnabled = true; g.drawImage(BND.off, L, T, pw, ph);
   g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 1.6; g.beginPath();                    // decision boundary: where the mean command crosses zero (engine on / off)
   const F = BND.field, cwid = pw / nx, chei = ph / ny;
-  for (let iy = 0; iy < ny; iy++) for (let ix = 0; ix < nx; ix++) {
+  if (F) for (let iy = 0; iy < ny; iy++) for (let ix = 0; ix < nx; ix++) {
     const v = F[iy * nx + ix] > -0.5;
     if (ix + 1 < nx && (F[iy * nx + ix + 1] > -0.5) !== v) { const x = L + (ix + 1) * cwid, y = T + ph - (iy + 1) * chei; g.moveTo(x, y); g.lineTo(x, y + chei); }
     if (iy + 1 < ny && (F[(iy + 1) * nx + ix] > -0.5) !== v) { const x = L + ix * cwid, y = T + ph - (iy + 1) * chei; g.moveTo(x, y); g.lineTo(x + cwid, y); }
@@ -3319,7 +3450,14 @@ function drawAtt() {
   g.strokeStyle = 'rgba(242,196,107,.8)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(px(-tm), py(sm * 0.7)); g.lineTo(px(tm), py(-sm * 0.7)); g.stroke();        // switching line: spin + k * tilt = 0, where a bang-bang controller flips its command
   g.fillStyle = '#8791bb'; g.font = '600 12px Consolas, monospace'; g.textAlign = 'center'; for (let t = -tm; t <= tm; t += 10) g.fillText(t, px(t), T + ph + 14); g.textAlign = 'right'; for (let w = -sm; w <= sm; w += 20) g.fillText(w, L - 6, py(w) + 4);
   g.textAlign = 'center'; g.fillStyle = '#6a739c'; g.fillText('tilt (deg)', L + pw / 2, P.h - 6); g.save(); g.translate(12, T + ph / 2); g.rotate(-Math.PI / 2); g.fillText('spin rate (deg/s)', 0, 0); g.restore();
-  g.lineWidth = 2; for (let i = 1; i <= last; i++) { const fr = f[i]; g.strokeStyle = fr.s > 0 ? (fr.side > 0 ? '#7fd4ff' : '#c9a0ff') : s.col; g.globalAlpha = 0.35 + 0.65 * i / Math.max(1, last); g.beginPath(); g.moveTo(px(A.tilt[i - 1]), py(A.spin[i - 1])); g.lineTo(px(A.tilt[i]), py(A.spin[i])); g.stroke(); }
+  g.lineWidth = 2; g.lineJoin = 'round';                                          // runs of steps with the same colour and (rounded) fade go out as one line (it was one stroke per step)
+  for (let i = 1, key = null; ; i++) {
+    if (i > last) { if (key) g.stroke(); break; }
+    const fr = f[i], col = fr.s > 0 ? (fr.side > 0 ? '#7fd4ff' : '#c9a0ff') : s.col, al = Math.round((0.35 + 0.65 * i / Math.max(1, last)) * 24) / 24, k = col + al;
+    if (k !== key) { if (key) g.stroke(); key = k; g.strokeStyle = col; g.globalAlpha = al; g.beginPath(); g.moveTo(px(A.tilt[i - 1]), py(A.spin[i - 1])); }
+    g.lineTo(px(A.tilt[i]), py(A.spin[i]));
+  }
+  g.lineJoin = 'miter';
   g.globalAlpha = 1; g.fillStyle = '#fff'; g.beginPath(); g.arc(px(A.tilt[last]), py(A.spin[last]), 5, 0, 7); g.fill();
   const E = 0.5 * A.spin[last] * A.spin[last] / (sm * sm) + 0.5 * (A.tilt[last] / TL.tiltLim) ** 2;
   g.textAlign = 'right'; g.fillStyle = '#cfd6f3'; g.font = '600 13px Consolas, monospace'; g.fillText(`tilt ${tnum(A.tilt[last])}\u00b0 \u00b7 spin ${tnum(A.spin[last], 0)}\u00b0/s \u00b7 margin ${tnum(TL.tiltLim - Math.abs(A.tilt[last]))}\u00b0`, L + pw - 6, T + 18);
@@ -3390,11 +3528,10 @@ function drawCrit() {
 }
 
 // ---------------- brain state-space (PCA of the second hidden layer)
-function pcaOf(ep) {
-  const a = ep.act, n = ep.frames.length;
-  if (ep._pca && ep._pca.id === ep.id) return ep._pca;
-  const D = a.dims[2], X = new Float64Array(n * D), mu = new Float64Array(D);
-  for (let i = 0; i < n; i++) for (let j = 0; j < D; j++) { const v = a.h2[i * D + j] / 100; X[i * D + j] = v; mu[j] += v / n; }
+// It is worked out once per flight, in a background worker (for a 256-wide layer it is some 30 million multiply-adds: a freeze of a tenth of a second or more when it ran here).
+function pcaMath(h2, n, D) {                                                     // the same maths in the worker and, without one, here; uses nothing else from the page
+  const X = new Float64Array(n * D), mu = new Float64Array(D);
+  for (let i = 0; i < n; i++) for (let j = 0; j < D; j++) { const v = h2[i * D + j] / 100; X[i * D + j] = v; mu[j] += v / n; }
   for (let i = 0; i < n; i++) for (let j = 0; j < D; j++) X[i * D + j] -= mu[j];
   const C = new Float64Array(D * D); for (let i = 0; i < n; i++) for (let j = 0; j < D; j++) { const xj = X[i * D + j]; if (xj) for (let k = j; k < D; k++) C[j * D + k] += xj * X[i * D + k] / n; }
   for (let j = 0; j < D; j++) for (let k = 0; k < j; k++) C[j * D + k] = C[k * D + j];
@@ -3407,19 +3544,45 @@ function pcaOf(ep) {
     for (let j = 0; j < D; j++) for (let k = 0; k < D; k++) C[j * D + k] -= lam * v[j] * v[k];             // deflate
   }
   const P2 = new Float32Array(n * 2); for (let i = 0; i < n; i++) for (let c = 0; c < 2; c++) { let t = 0; for (let j = 0; j < D; j++) t += X[i * D + j] * comps[c][j]; P2[i * 2 + c] = t; }
-  return (ep._pca = { id: ep.id, P: P2, ev: vals.map(l => l / (tr || 1)) });
+  return { P: P2, ev: vals.map(l => l / (tr || 1)) };
+}
+const PCAW = (() => {                                                            // the worker: one flight's layer-2 activations in, its two strongest directions out
+  try {
+    const src = `const pcaMath = ${pcaMath.toString()};\nonmessage = e => { const { id, h2, n, D } = e.data, r = pcaMath(h2, n, D); postMessage({ id, P: r.P, ev: r.ev }, [r.P.buffer]); };`;
+    const o = { w: new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' }))), pend: new Map(), seq: 0, failed: false };
+    o.w.onmessage = e => { const ep = o.pend.get(e.data.id); o.pend.delete(e.data.id); if (ep) { ep._pca = { id: ep.id, P: e.data.P, ev: e.data.ev }; GPS.key.gp_pca = null; } };     // (the graph redraws with it)
+    o.w.onerror = e => { o.failed = true; console.warn('brain state space: worker failed, working it out on the page:', e.message); };
+    return o;
+  } catch (e) { return null; }
+})();
+function pcaOf(ep) {                                                             // the flight's projection, or null while the worker is still on it
+  if (ep._pca && ep._pca.id === ep.id) return ep._pca;
+  const a = ep.act, n = ep.frames.length, D = a.dims[2];
+  if (PCAW && !PCAW.failed) {
+    if (ep._pcaAsked !== ep.id) { ep._pcaAsked = ep.id; const id = ++PCAW.seq, h2 = Float32Array.from(a.h2.length > n * D ? a.h2.slice(0, n * D) : a.h2); PCAW.pend.set(id, ep); PCAW.w.postMessage({ id, h2, n, D }, [h2.buffer]); }
+    return null;
+  }
+  const r = pcaMath(a.h2, n, D); return (ep._pca = { id: ep.id, P: r.P, ev: r.ev });
 }
 function drawPca() {
   const P = GPN.pca, g = P.g, s = slots[brainSel]; frameBox(P); const last = need(P, s); if (last === null) return;
   if (!s.ep.act || !s.ep.act.h2) return gpMsg(P, s.noAct === s.ep.id ? 'no neural data for this run' : 'loading the network\u2026');
-  const Q = pcaOf(s.ep), n = s.ep.frames.length, L = 14, R = 14, T = 14, B = 34, pw = P.w - L - R, ph = P.h - T - B;
+  const Q = pcaOf(s.ep); if (!Q) return gpMsg(P, 'working out this flight’s brain state space…');
+  const n = s.ep.frames.length, L = 14, R = 14, T = 14, B = 34, pw = P.w - L - R, ph = P.h - T - B;
   let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; for (let i = 0; i < n; i++) { x0 = Math.min(x0, Q.P[2 * i]); x1 = Math.max(x1, Q.P[2 * i]); y0 = Math.min(y0, Q.P[2 * i + 1]); y1 = Math.max(y1, Q.P[2 * i + 1]); }
   const mx = (x1 - x0) * 0.08 + 1e-3, my = (y1 - y0) * 0.08 + 1e-3; x0 -= mx; x1 += mx; y0 -= my; y1 += my;
   const px = v => L + (v - x0) / (x1 - x0) * pw, py = v => T + ph - (v - y0) / (y1 - y0) * ph;
   g.fillStyle = 'rgba(5,9,20,.5)'; g.fillRect(L, T, pw, ph);
   g.strokeStyle = 'rgba(130,150,210,.14)'; g.lineWidth = 1; g.beginPath(); g.moveTo(px(0), T); g.lineTo(px(0), T + ph); g.moveTo(L, py(0)); g.lineTo(L + pw, py(0)); g.stroke();
   g.lineWidth = 2.4; const f = s.ep.frames;
-  for (let i = 1; i <= last; i++) { const m = f[i].m; g.strokeStyle = m > 0 ? `rgb(255,${Math.round(190 - 90 * m)},${Math.round(90 - 60 * m)})` : '#5a86d6'; g.beginPath(); g.moveTo(px(Q.P[2 * i - 2]), py(Q.P[2 * i - 1])); g.lineTo(px(Q.P[2 * i]), py(Q.P[2 * i + 1])); g.stroke(); }
+  g.lineJoin = 'round';                                                            // segments in a row with the same colour go out as one line (it was one stroke per frame)
+  for (let i = 1, col = null; ; i++) {
+    if (i > last) { if (col) g.stroke(); break; }
+    const m = f[i].m, c = m > 0 ? `rgb(255,${Math.round(190 - 90 * m)},${Math.round(90 - 60 * m)})` : '#5a86d6';
+    if (c !== col) { if (col) g.stroke(); col = c; g.strokeStyle = c; g.beginPath(); g.moveTo(px(Q.P[2 * i - 2]), py(Q.P[2 * i - 1])); }
+    g.lineTo(px(Q.P[2 * i]), py(Q.P[2 * i + 1]));
+  }
+  g.lineJoin = 'miter';
   g.globalAlpha = 0.25; g.strokeStyle = '#fff'; g.lineWidth = 1; g.beginPath(); for (let i = last; i < n; i++) i > last ? g.lineTo(px(Q.P[2 * i]), py(Q.P[2 * i + 1])) : g.moveTo(px(Q.P[2 * i]), py(Q.P[2 * i + 1])); g.stroke(); g.globalAlpha = 1;
   g.strokeStyle = '#fff'; g.lineWidth = 1.5; g.beginPath(); g.arc(px(Q.P[0]), py(Q.P[1]), 6, 0, 7); g.stroke();
   g.fillStyle = '#fff'; g.beginPath(); g.arc(px(Q.P[2 * last]), py(Q.P[2 * last + 1]), 5, 0, 7); g.fill();
@@ -3484,23 +3647,42 @@ function setPending(id, on, text = 'PENDING DATA') {
 }
 
 let gpT = 0;
+// The extra graphs on the main screen. Each one is redrawn only when its data has changed (the ones that also move with the clock: at most 10 times a second), only while
+// it is on screen, and only a few per frame, within a time budget: with twenty graphs open, drawing them all in one frame took longer than the frame itself.
+const GP_ANIM = new Set(['gp_bnd', 'gp_xvit', 'gp_xgal', 'gp_xair', 'gp_xeq']), GP_BUDGET = 5;
+const GPS = { at: {}, key: {}, on: {}, rr: 0 };
+const gpIO = new IntersectionObserver(es => es.forEach(e => { GPS.on[e.target.id] = e.isIntersecting; }));
 function drawGraphs(now, only) {
-  if (!only) { if (now - gpT < 66) return; gpT = now; }
+  if (!only) { if (now - gpT < 30) return; gpT = now; }
   const sel = slots[brainSel], hasEp = !!(sel && sel.ep && sel.last >= 0), act = hasEp ? sel.ep.act : null;
   const hasE = o => !!(o.ep && o.last >= 0), hasA = (o, k) => hasE(o) && !!(o.ep.act && o.ep.act[k]);
   const PER = { gp_bnd: ['gcBnd', o => hasA(o, 'b1') && !!actAt(o)], gp_pfd: ['gcPfd', hasE], gp_att: ['gcAtt', hasE], gp_crit: ['gcCrit', o => hasA(o, 'v')], gp_pca: ['gcPca', o => hasA(o, 'h2')],
     gp_ghost: ['gcGhost', hasE], gp_rew: ['gcRew', hasE], gp_en: ['gcEn', hasE] };
-  const run = (flag, id, fn, ok) => {
+  const tasks = [];
+  const run = (flag, id, fn, ok, text = 'PENDING DATA') => {
     if (!flag || (only && !only.includes(id))) return;
     if (ADM.on && PER[id]) { PEND[id] && (PEND[id].b.style.display = 'none'); adminDraw(fn, [PER[id][0]], { need: PER[id][1] }); return; }        // Admin view: every lander, each in its colour
-    setPending(id, !ok); if (ok) fn();
+    if (only) { setPending(id, !ok, text); if (ok) fn(); } else tasks.push([id, fn, ok, text]);                                                // asked for by name: drawn now
   };
   run(VIS.gFuel, 'gp_fuel', drawFuel, hasEp); run(VIS.gRec, 'gp_rec', drawRecorder, slots.some(o => o.ep)); run(VIS.gLand, 'gp_land', drawScatter, LANDINGS.length > 0);
   run(VIS.gHeat, 'gp_heat', drawHeat, lastProgress.filter(r => r.bands).length >= 2); run(VIS.gBnd, 'gp_bnd', drawBoundary, !!(act && act.b1 && actAt(sel)));
   run(VIS.gPfd, 'gp_pfd', drawPfd, hasEp); run(VIS.gAtt, 'gp_att', drawAtt, hasEp); run(VIS.gCrit, 'gp_crit', drawCrit, !!(act && act.v)); run(VIS.gPca, 'gp_pca', drawPca, !!(act && act.h2));
-  XP.forEach(p => { if (!VIS[p.key]) return; if (only && !only.includes(p.id)) return; const ok = p.ok({ hasEp, pair: hasEp && !!(sel.eps && sel.eps.length === 2) }); setPending(p.id, !ok, p.pair ? 'PAIR ONLY' : 'PENDING DATA'); if (ok) p.draw(); });
+  XP.forEach(p => run(VIS[p.key], p.id, p.draw, p.ok({ hasEp, pair: hasEp && !!(sel.eps && sel.eps.length === 2) }), p.pair ? 'PAIR ONLY' : 'PENDING DATA'));
   run(VIS.gGhost, 'gp_ghost', drawGhost, hasEp); run(VIS.gRew, 'gp_rew', drawRew, hasEp); run(VIS.gEn, 'gp_en', drawEn, hasEp);
   ['fuel', 'rec', 'land', 'heat', 'bnd'].forEach(k => { const t = $('gt_gp_' + k); if (t && (k === 'fuel' || k === 'rec' || k === 'bnd')) t.textContent = { fuel: 'Fuel profile', rec: 'Flight recorder', bnd: 'Decision boundary' }[k] + ' \u00b7 lander ' + (brainSel + 1); });
+  if (only || !tasks.length) return;
+  const lastL = LANDINGS[LANDINGS.length - 1], lastP = lastProgress[lastProgress.length - 1];      // both lists are capped, so their lengths stop changing: the newest entries tell
+  const data = `${brainSel}|${dualFocus}|${LANDINGS.length}:${lastL ? lastL.x + ':' + lastL.v : ''}|${lastProgress.length}:${lastP ? lastP.t : ''}|` + slots.map(o => o.ep ? `${o.ep.id}:${o.last}:${o.state}:${o.ep.act ? 1 : 0}` : '-').join(','), t0 = performance.now();
+  let drawn = 0;
+  for (let n = 0; n < tasks.length; n++) {                              // round-robin from where the last frame stopped, so no graph waits forever
+    const j = (GPS.rr + n) % tasks.length, [id, fn, ok, text] = tasks[j];
+    if (!(id in GPS.on)) { GPS.on[id] = true; const el = $(id); if (el) gpIO.observe(el); }
+    if (!GPS.on[id]) continue;                                          // scrolled out of view
+    const key = data + '|' + ok;
+    if (GPS.key[id] === key && !(ok && GP_ANIM.has(id) && now - (GPS.at[id] || 0) >= 100)) continue;      // nothing new to draw
+    if (drawn && performance.now() - t0 > GP_BUDGET) { GPS.rr = j; return; }                               // this frame's share is used up: carry on from here next frame
+    setPending(id, !ok, text); if (ok) fn(); GPS.key[id] = key; GPS.at[id] = now; drawn++;
+  }
 }
 
 // ---- the seven abstract panels
@@ -3578,6 +3760,8 @@ function drawAir() {
   while (AIR.p.length < 320) AIR.p.push({ x: Math.random() * w, y: Math.random() * h });
   const hot = Math.min(1, q / 30000);
   g.lineCap = 'round';
+  { const col = lerpC([90, 140, 255], [255, 205, 150], hot); g.strokeStyle = `rgba(${col.join(',')},${0.12 + 0.55 * Math.min(1, 0.25 + hot)})`; g.lineWidth = 1 + 1.5 * hot; }
+  g.beginPath();                                                                  // every tracer has the same colour and width, so they all go out as one path (it was one stroke each)
   for (const p of AIR.p) {
     let vx = fx * v, vy = fy * v; const dx = p.x - cx, dy = p.y - cy, d = Math.hypot(dx, dy) + 1e-3;
     { const co = Math.cos(f.a || 0), si = Math.sin(f.a || 0), lx = dx * co - dy * si, ly = dx * si + dy * co, HH = AIRH, cl = Math.max(-0.46 * HH, Math.min(0.46 * HH, ly));            // into the stage's own frame
@@ -3585,9 +3769,9 @@ function drawAir() {
       if (dd < 2.4 * rb) { const k = (rb * rb) / (dd * dd) * 0.9, ox = lx / dd, oy = (ly - cl) / dd; vx += (ox * co + oy * si) * v * k * 0.5; vy += (-ox * si + oy * co) * v * k * 0.5; } }               // bend round the body
     p.x += vx * dt; p.y += vy * dt;
     if (p.x < -24 || p.x > w + 24 || p.y < -24 || p.y > h + 24) { if (Math.abs(fy) > Math.abs(fx)) { p.y = fy > 0 ? -10 : h + 10; p.x = Math.random() * w; } else { p.x = fx > 0 ? -10 : w + 10; p.y = Math.random() * h; } }
-    const col = lerpC([90, 140, 255], [255, 205, 150], hot), a = 0.12 + 0.55 * Math.min(1, 0.25 + hot);
-    g.strokeStyle = `rgba(${col.join(',')},${a})`; g.lineWidth = 1 + 1.5 * hot; g.beginPath(); g.moveTo(p.x - vx * 0.05, p.y - vy * 0.05); g.lineTo(p.x, p.y); g.stroke();
+    g.moveTo(p.x - vx * 0.05, p.y - vy * 0.05); g.lineTo(p.x, p.y);
   }
+  g.stroke();
   g.save(); g.translate(cx, cy); g.rotate(-(f.a || 0));                                                                       // the stage, engine down
   if (AIR_IMG.complete && AIR_IMG.naturalWidth) {
     const ih = AIRH, iw = ih * AIR_IMG.naturalWidth / AIR_IMG.naturalHeight, ey = (AIR_ENGINE - 0.5) * ih, thr = f.m || 0;
@@ -3624,16 +3808,17 @@ function drawBraid() {
   const P = XPN.xBra, g = P.g, c = xpCur(); xpClear(P); if (!c || !c.s.eps) return;
   const fa = c.s.eps[0].frames, i1 = Math.min(c.s.last, fa.length - 1), win = 320, i0 = Math.max(0, i1 - win + 1), n = i1 - i0 + 1, L = 14, W = P.w - 2 * L, hmax = Math.max(1, fa[0].y);
   const Yh = hh => P.h * 0.86 - Math.max(0, hh) / hmax * P.h * 0.72, X = k => L + k / Math.max(1, n - 1) * W;
-  let gapNow = 0;
+  let gapNow = 0; const rungs = new Map(), sA = [], sB = [];                      // the strands as two lines and the rungs grouped by (rounded) colour: it was two glowing strokes and a rung per step
   for (let k = 0; k < n; k++) {
-    const fr = fa[i0 + k]; if (!fr || !fr.b) continue;
+    const fr = fa[i0 + k]; if (!fr || !fr.b) { sA.push(null); sB.push(null); continue; }
     const hA = fr.y, hB = fr.b.y, gap = Math.abs(hA - hB), mid = Yh((hA + hB) / 2), amp = 7 + Math.min(34, gap * 1.1), ph = (i0 + k) * 0.33, x = X(k);
     const yA = mid + amp * Math.sin(ph), yB = mid - amp * Math.sin(ph); gapNow = gap;
-    if (k % 3 === 0) { const col = lerpC([150, 230, 255], [255, 80, 70], Math.min(1, gap / 30)); g.strokeStyle = `rgba(${col.join(',')},.4)`; g.lineWidth = 1; g.beginPath(); g.moveTo(x, yA); g.lineTo(x, yB); g.stroke(); }
-    if (k) { const pf = fa[i0 + k - 1]; if (pf && pf.b) { const pm = Yh((pf.y + pf.b.y) / 2), pa = 7 + Math.min(34, Math.abs(pf.y - pf.b.y) * 1.1), pp = (i0 + k - 1) * 0.33, x0 = X(k - 1);
-      g.lineWidth = 3; g.shadowBlur = 8; g.shadowColor = '#6ee7ff'; g.strokeStyle = '#6ee7ff'; g.beginPath(); g.moveTo(x0, pm + pa * Math.sin(pp)); g.lineTo(x, yA); g.stroke();
-      g.shadowColor = '#ff7ad9'; g.strokeStyle = '#ff7ad9'; g.beginPath(); g.moveTo(x0, pm - pa * Math.sin(pp)); g.lineTo(x, yB); g.stroke(); g.shadowBlur = 0; } }
+    if (k % 3 === 0) { const q = Math.round(Math.min(1, gap / 30) * 16) / 16; if (!rungs.has(q)) rungs.set(q, []); rungs.get(q).push(x, yA, yB); }
+    sA.push([x, yA]); sB.push([x, yB]);
   }
+  g.lineWidth = 1; rungs.forEach((r, q) => { const col = lerpC([150, 230, 255], [255, 80, 70], q); g.strokeStyle = `rgba(${col.join(',')},.4)`; g.beginPath(); for (let j = 0; j < r.length; j += 3) { g.moveTo(r[j], r[j + 1]); g.lineTo(r[j], r[j + 2]); } g.stroke(); });
+  const strand = (pts, col) => { g.lineWidth = 3; g.lineJoin = 'round'; g.shadowBlur = 8; g.shadowColor = col; g.strokeStyle = col; g.beginPath(); let pen = false; for (const p of pts) { if (!p) { pen = false; continue; } if (pen) g.lineTo(p[0], p[1]); else g.moveTo(p[0], p[1]); pen = true; } g.stroke(); g.shadowBlur = 0; g.lineJoin = 'miter'; };
+  strand(sA, '#6ee7ff'); strand(sB, '#ff7ad9');
   g.fillStyle = '#6ee7ff'; g.fillRect(14, 12, 9, 9); g.fillStyle = '#ff7ad9'; g.fillRect(70, 12, 9, 9); g.fillStyle = '#cfd6f3'; g.font = '600 11px Consolas, monospace'; g.textAlign = 'left'; g.fillText('A', 27, 21); g.fillText('B', 83, 21);
   g.textAlign = 'right'; g.fillText(`height gap ${gapNow.toFixed(1)} m`, P.w - 14, 21);
 }
@@ -3647,17 +3832,23 @@ function drawEq() {
     ['FUEL', f.fuel], ['THR', f.m || 0], ['GIM', Math.abs(f.g || 0) / 0.0873], ['FIN', Math.abs(f.f || 0) / 0.4363], ['GAS', f.gas === undefined ? 1 : f.gas], ['Q', (f.q || 0) / 40000], ['AX', Math.abs(f.ax || 0) / 30],
     ['AY', Math.abs(f.ay || 0) / 30], ['WIND', Math.abs(f.wd || 0) / 15], ['RCS A', Math.abs(f.r1 || 0)], ['RCS B', Math.abs(f.r2 || 0)]];
   const n = ch.length, L = 14, bw = (P.w - 2 * L) / n, base = P.h * 0.66, top = 24, segs = 18, sh = (base - top) / segs;
-  ch.forEach(([name, val], k) => {
+  const lit = [], off = [], peaks = [], rects = (r, w, hh) => { g.beginPath(); for (let j = 0; j < r.length; j += 2) g.rect(r[j], r[j + 1], w, hh); g.fill(); };      // the segments are grouped by colour (it was one rectangle each)
+  for (let s2 = 0; s2 < segs; s2++) lit.push([]);
+  ch.forEach(([, val], k) => {
     const tgt = Math.max(0, Math.min(1, val)); EQ.v[k] = (EQ.v[k] === undefined ? tgt : EQ.v[k] + (tgt - EQ.v[k]) * 0.35); EQ.pk[k] = Math.max((EQ.pk[k] || 0) - dt * 0.45, EQ.v[k]);
-    const lit = Math.round(EQ.v[k] * segs), pkSeg = Math.min(segs - 1, Math.round(EQ.pk[k] * segs)), x = L + k * bw + 2;
-    for (let s2 = 0; s2 < segs; s2++) {
-      const on = s2 < lit, u = s2 / (segs - 1), col = lerpC(lerpC([60, 220, 140], [250, 220, 80], Math.min(1, u * 1.6)), [255, 70, 70], Math.max(0, u * 1.6 - 0.6));
-      const y = base - (s2 + 1) * sh; g.fillStyle = on ? `rgb(${col.join(',')})` : 'rgba(255,255,255,.05)'; g.fillRect(x, y + 1, bw - 5, sh - 2);
-      if (on) { g.fillStyle = `rgba(${col.join(',')},.16)`; g.fillRect(x, base + (s2 + 0) * sh * 0.45 + 4, bw - 5, sh * 0.4); }
-    }
-    g.fillStyle = '#fff'; g.fillRect(x, base - (pkSeg + 1) * sh + 1, bw - 5, 2);
-    g.save(); g.translate(x + bw / 2 - 3, P.h - 10); g.rotate(-Math.PI / 2); g.fillStyle = '#8791bb'; g.font = '600 10px Consolas, monospace'; g.textAlign = 'left'; g.fillText(name, 0, 3); g.restore();
+    const on = Math.round(EQ.v[k] * segs), pkSeg = Math.min(segs - 1, Math.round(EQ.pk[k] * segs)), x = L + k * bw + 2;
+    for (let s2 = 0; s2 < segs; s2++) (s2 < on ? lit[s2] : off).push(x, base - (s2 + 1) * sh + 1);
+    peaks.push(x, base - (pkSeg + 1) * sh + 1);
   });
+  g.fillStyle = 'rgba(255,255,255,.05)'; rects(off, bw - 5, sh - 2);
+  lit.forEach((r, s2) => {
+    if (!r.length) return;
+    const u = s2 / (segs - 1), col = lerpC(lerpC([60, 220, 140], [250, 220, 80], Math.min(1, u * 1.6)), [255, 70, 70], Math.max(0, u * 1.6 - 0.6));
+    g.fillStyle = `rgb(${col.join(',')})`; rects(r, bw - 5, sh - 2);
+    g.fillStyle = `rgba(${col.join(',')},.16)`; g.beginPath(); for (let j = 0; j < r.length; j += 2) g.rect(r[j], base + s2 * sh * 0.45 + 4, bw - 5, sh * 0.4); g.fill();     // the reflection
+  });
+  g.fillStyle = '#fff'; rects(peaks, bw - 5, 2);
+  ch.forEach(([name], k) => { const x = L + k * bw + 2; g.save(); g.translate(x + bw / 2 - 3, P.h - 10); g.rotate(-Math.PI / 2); g.fillStyle = '#8791bb'; g.font = '600 10px Consolas, monospace'; g.textAlign = 'left'; g.fillText(name, 0, 3); g.restore(); });
 }
 
 // ---- hidden controls: keyboard shortcuts and a pointer that hides when idle
@@ -4035,8 +4226,9 @@ function opsWantsCam() {                                  // the landing cam is 
   if (OPS.viewEl !== v) { OPS.viewEl = v; opsViewIO.disconnect(); opsViewIO.observe(v); const r = v.getBoundingClientRect(); OPS.viewOn = r.bottom > 0 && r.top < window.innerHeight; }
   return OPS.viewOn;                                      // kept by an IntersectionObserver, so the loop never asks the browser for a fresh layout
 }
-let loopT = 0;                                                     // the main screen draws at most 30 pictures a second (the flight data has 20; the showcase has its own limit)
-function loop(now) { if (!SHOW) { if (now - loopT < 1000 / 30 - 2) { requestAnimationFrame(loop); return; } loopT = now; } if (SHOW) { const far = window.scrollY >= window.innerHeight; if (document.hidden || (far && !OPS.vis) || now - SHC.lastDraw < 1000 / (far ? 20 : SHC.FPS) - 2) { requestAnimationFrame(loop); return; } SHC.lastDraw = now; } const dt = Math.min(.05, (now - lastT) / 1000); lastT = now; update(dt); const offStage = window.scrollY >= window.innerHeight * 0.98 && !(OPS.vis && OPS.src === 'view'); if (!offStage) draw(); if (ADM.on) adminFrame(now); else { if (brainOn) drawBrain(); if (miniOpen && !offStage) drawMini(); try { if ((!offStage || opsWantsCam()) && now - camT >= 1000 / CAM_FPS - 4) { camT = now; drawCam(); } if (!offStage && now - cam2T >= 1000 / CAM2_FPS - 4) { cam2T = now; drawCamPartner(); } if (!offStage) { drawPhase(); drawGraphs(now); } } catch (e) { /* never stop the animation loop */ } } requestAnimationFrame(loop); }
+let loopT = 0, loopN = 0;                                          // the main screen draws at most 60 pictures a second (the showcase has its own limit); the phase panel and the
+                                                                   // extra graphs take turns, one on every other picture, so no single frame carries both
+function loop(now) { if (!SHOW) { if (now - loopT < 1000 / 60 - 2) { requestAnimationFrame(loop); return; } loopT = now; } if (SHOW) { const far = window.scrollY >= window.innerHeight; if (document.hidden || (far && !OPS.vis) || now - SHC.lastDraw < 1000 / (far ? 20 : SHC.FPS) - 2) { requestAnimationFrame(loop); return; } SHC.lastDraw = now; } const dt = Math.min(.05, (now - lastT) / 1000); lastT = now; update(dt); const offStage = window.scrollY >= window.innerHeight * 0.98 && !(OPS.vis && OPS.src === 'view'); if (!offStage) draw(); if (ADM.on) adminFrame(now); else { if (brainOn) drawBrain(); if (miniOpen && !offStage) drawMini(); try { if ((!offStage || opsWantsCam()) && now - camT >= 1000 / CAM_FPS - 4) { camT = now; drawCam(); } if (!offStage && now - cam2T >= 1000 / CAM2_FPS - 4) { cam2T = now; drawCamPartner(); } if (!offStage) { if (++loopN & 1) drawGraphs(now); else drawPhase(); } } catch (e) { /* never stop the animation loop */ } } requestAnimationFrame(loop); }
 if (SHOW) {
   try { if (localStorage.getItem('spacexperiment.showdock') === '1') showcaseDock(true, false); else $('jDock').textContent = 'Move beside the tabs \u2193'; } catch (e) { /* storage may be blocked */ }
   let rt = 0; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (JC.inited) judgeSlide(JC.slide); }, 200); });
@@ -4429,8 +4621,9 @@ Object.assign(OPS_PANELS, {
   }, update(st) {
     (OPS.kp || []).forEach(([, col, val, sub, trend], k) => {
       if (!st) { opsSet(`kp${k}v`, '—'); opsSet(`kp${k}u`, ''); opsSet(`kp${k}s`, ''); opsCtx(`kp${k}c`); return; }
-      const [v, u] = val(st); opsSet(`kp${k}v`, v); opsSet(`kp${k}u`, u); opsSet(`kp${k}s`, sub(st)); if (OPS.slowTick) opsSpark(`kp${k}c`, trend(st), col);
+      const [v, u] = val(st); opsSet(`kp${k}v`, v); opsSet(`kp${k}u`, u); opsSet(`kp${k}s`, sub(st));
     });
+    if (st && OPS.slowTick && OPS.slowQ) OPS.slowQ.unshift(opsKpSparks);     // the trend lines go with the slow panels, in idle time
   } },
 });
 OPS_LAYOUTS.deck = { label: 'Deck', dense: true, tiers: {
@@ -4802,9 +4995,25 @@ function opsWire() {                                       // one delegated list
   $('ops').addEventListener('dblclick', e => { const g = e.target.closest('.rgrip'); if (!g) return; const mine = OPS.rowH[OPS.rowKey]; if (mine) delete mine[+g.dataset.row]; opsApplyRows(); opsRowSave(); OPS.slowT = 0; });
   $('ops').addEventListener('input', e => { if (e.target.id === 'opsSimSeek') opsSeek(+e.target.value / 1000); });
 }
+// The fast panels update every tick. The slow ones (charts, tables) update in rounds about 3 times a second, drawn in the browser's idle time between frames,
+// a few at a time, so they never hold up a frame while you scroll (a round used to land on a single frame).
+function opsRun(id, st) { try { OPS_PANELS[id].update(st); } catch (e) { console.warn('monitoring ground panel ' + id + ':', e); } }
+function opsKpSparks() { const st = opsState(); if (st) (OPS.kp || []).forEach(([, col, , , trend], k) => opsSpark(`kp${k}c`, trend(st), col)); }
+const opsIdleCb = window.requestIdleCallback ? (cb, o) => requestIdleCallback(cb, o) : cb => setTimeout(() => cb({ timeRemaining: () => 8, didTimeout: false }), 1);
+function opsIdle() {
+  if (OPS.idleOn) return; OPS.idleOn = true;
+  opsIdleCb(dl => {
+    OPS.idleOn = false; const st = opsState(), keep = OPS.slowTick; OPS.slowTick = true;
+    do { const id = OPS.slowQ.shift(); if (typeof id === 'function') { try { id(); } catch (e) { console.warn('monitoring ground:', e); } } else if (id && OPS.panels.includes(id)) opsRun(id, st); } while (OPS.slowQ.length && dl.timeRemaining() > 3);
+    OPS.slowTick = keep; if (OPS.slowQ.length) opsIdle();
+  }, { timeout: 250 });
+}
 function opsOverview(st) {
-  const now = performance.now(), slow = !OPS.slowT || now - OPS.slowT >= 300; if (slow) OPS.slowT = now; OPS.slowTick = slow;
-  for (const id of OPS.panels) { if (!slow && OPS_SLOW.has(id)) continue; try { OPS_PANELS[id].update(st); } catch (e) { console.warn('monitoring ground panel ' + id + ':', e); } }
+  const now = performance.now(), round = (!OPS.slowT || now - OPS.slowT >= 300) && !(OPS.slowQ && OPS.slowQ.length);
+  OPS.slowTick = round;
+  if (round) { OPS.slowT = now; OPS.slowQ = OPS.panels.filter(id => OPS_SLOW.has(id)); }
+  for (const id of OPS.panels) if (!OPS_SLOW.has(id)) opsRun(id, st);
+  if (round) opsIdle();
 }
 
 function opsNetDraw(st) {                                  // the policy network drawn at the panel's own size (taller row = neurons further apart), from the same numbers as the main screen's network
@@ -4876,12 +5085,16 @@ function opsPath(st, cid, tid) {                                     // altitude
   opsSet(tid, `cyan = flown so far · dashed = engines off from now: would touch down ${Math.abs(pred.x - PADC).toFixed(0)} m ${pred.x >= PADC ? 'beyond' : 'short of'} the pad centre in ${pred.t.toFixed(1)} s, at ${pred.v.toFixed(0)} m/s`);
   return pred;
 }
-function opsLog(id) {                                      // the terminal's lines (kept by the main screen), copied
-  const rows = Array.from(termLog.children).slice(-90), box = $(id);
-  const html = rows.map(e => `<div class="${e.className}">${e.innerHTML}</div>`).join('');
-  if (OPS.html[id] === html) return;
-  const stick = box.scrollTop + box.clientHeight >= box.scrollHeight - 8;
-  OPS.html[id] = html; box.innerHTML = html; if (stick) box.scrollTop = box.scrollHeight;
+function opsLog(id) {                                      // the terminal's newest 90 lines (kept by the main screen), copied: only new lines are added, and the newest one refreshed (it can gain an "x3")
+  const box = $(id), src = termLog.children, last = src[src.length - 1];
+  if (!last) { if (box.firstChild) { box.textContent = ''; box._last = null; } return; }
+  if (box._last === last && box._lastHtml === last.innerHTML) return;
+  let k = src.length - 1; while (k >= 0 && src[k] !== box._last) k--;
+  if (k < 0) { box.textContent = ''; k = src.length - 91; }                    // the first time, or the lines it had are gone: copy the newest 90
+  else box.lastElementChild.replaceWith(src[k].cloneNode(true));            // the newest line it had may have changed since
+  const frag = document.createDocumentFragment(); for (let j = Math.max(0, k + 1); j < src.length; j++) frag.appendChild(src[j].cloneNode(true));
+  box.appendChild(frag); while (box.childElementCount > 90) box.firstElementChild.remove();
+  box._last = last; box._lastHtml = last.innerHTML; followLog(box);
 }
 function opsTabPanes(st) {                                 // the other tabs
   const t = OPS.tab;
