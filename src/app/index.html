@@ -306,9 +306,12 @@
   .ops-grid > .op { overflow:auto; scrollbar-width:thin; scrollbar-color:#1a3a63 transparent; } .ops-grid > .op::-webkit-scrollbar { width:6px; height:6px; } .ops-grid > .op::-webkit-scrollbar-thumb { background:#1a3a63; border-radius:3px; }
   .ops-grid > .op.bare, .ops-grid > .op.slim { overflow:visible; }
   .rgrip { align-self:end; height:12px; margin-bottom:-12px; position:relative; z-index:3; cursor:ns-resize; display:flex; align-items:center; justify-content:center; touch-action:none; }
-  .rgrip i { display:block; width:46px; height:4px; border-radius:3px; background:#24507f; opacity:.6; transition:opacity .15s, background .15s, width .15s; }
+  .rgrip i { display:block; width:46px; height:4px; border-radius:3px; background:#24507f; opacity:.35; transition:opacity .15s, background .15s, width .15s; }
   .rgrip:hover i, .rgrip.on i { opacity:1; background:#38c7ff; width:84px; } .rgrip:hover, .rgrip.on { background:linear-gradient(90deg, transparent, rgba(56,199,255,.10), transparent); }
-  @media (max-width:1180px) { .rgrip { display:none; } .ops-grid > .op { max-height:620px; } }
+  .cgrip { justify-self:start; width:12px; margin-left:-12px; position:relative; z-index:3; cursor:ew-resize; display:flex; align-items:center; justify-content:center; touch-action:none; }
+  .cgrip i { display:block; width:3px; height:34px; border-radius:2px; background:#24507f; opacity:.3; transition:opacity .15s, background .15s, height .15s; }
+  .cgrip:hover i, .cgrip.on i { opacity:1; background:#38c7ff; height:64px; } .cgrip:hover, .cgrip.on { background:linear-gradient(180deg, transparent, rgba(56,199,255,.10), transparent); }
+  @media (max-width:1180px) { .rgrip, .cgrip { display:none; } .ops-grid > .op { max-height:620px; } }
 </style>
 </head>
 <body>
@@ -470,7 +473,7 @@
       <div class="ops-pane" id="ops-settings"><div class="op"><h3>Settings</h3>
         <div class="ops-note"><b>This dock</b><br>It draws about 12 pictures a second, and only while it is on screen and this browser tab is visible. Switch it off here if the laptop needs every bit of power for something else.<br>
           <label><input type="checkbox" id="opsPause"> pause the monitoring ground (the main screen keeps running)</label></div>
-        <div class="ops-note" style="margin-top:14px"><b>Row heights</b><br>Drag the small tab under any row of the Overview to make that row taller or shorter; double-click a tab to put that row back. Your heights are remembered for each screen width.</div><div class="ops-btns"><button id="opsRowsReset">Reset all row heights</button></div>
+        <div class="ops-note" style="margin-top:14px"><b>Panel sizes</b><br>Drag the small tab under any row of the Overview to make that row taller or shorter; double-click a tab to put that row back. Drag the thin tab between two panels to share a row's width differently; double-click it to put the widths back. Both are remembered for each screen width.</div><div class="ops-btns"><button id="opsRowsReset">Reset all heights and widths</button></div>
         <div class="ops-note" style="margin-top:14px"><b>Simulator, training and models</b> are still set in the tabs under this dock. These buttons open them:</div>
         <div class="ops-btns"><button data-goto="startup">Startup</button><button data-goto="params">Parameters / Settings</button><button data-goto="ckpt">Checkpoints / Models</button><button data-goto="live">Live</button></div>
         <div class="ops-note">Not built yet: challenge sliders (crosswind, start fuel, controller gain), a booster cutaway, a reward heat-map and a thermal view. The simulator has no thermal model, so that view is left out.</div>
@@ -3942,7 +3945,7 @@ if (!RECP) requestAnimationFrame(loop);
 // ================================================================ Monitoring ground: the dock under the main screen.
 // Read-only: it reads what the main screen already has (the selected lander's frames, the network's numbers, the terminal log, the charts) and draws it in its own tabs.
 // It draws ~12 pictures a second, and only while it is on screen and the page is visible. Not started in Showcase / Recorder.
-const OPS = { tab: 'overview', src: 'cam', pr: 'eng', ts: 'all', layout: 'deck', rowH: {}, rowKey: '', hs: null, panels: [], vis: false, paused: false, done: [], t: 0, html: {}, last: null };
+const OPS = { tab: 'overview', src: 'cam', pr: 'eng', ts: 'all', layout: 'deck', rowH: {}, areaH: {}, rows: [], rowKey: '', hs: null, panels: [], vis: false, paused: false, done: [], t: 0, html: {}, last: null };
 const OPS_FINAL_H = 150;                                   // display label only: below this height the descent is called "final"
 const OPS_TILT_OK = 0.15;                                  // the paper's success rule: tilt at rest of at most 0.15 rad
 const OPS_PH = [['ENTRY', 'Re-entry fall'], ['IGNITION', 'Engine start'], ['BURN', 'Braking burn'], ['FINAL', 'Final descent'], ['LANDED', 'Touchdown']];
@@ -4515,7 +4518,6 @@ function opsCamGrab(s, c, f, th, om) {
   g2.textAlign = 'center'; g2.fillStyle = '#fff'; g2.font = '700 21px system-ui'; g2.fillText(`T+ ${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`, N0 / 2, N0 - 52);
   g2.font = '600 11px Consolas, monospace'; g2.fillStyle = '#d6dbe6'; g2.fillText(`TILT ${(th * 180 / Math.PI).toFixed(1)}°  SPIN ${(om >= 0 ? '+' : '−') + Math.abs(om * 180 / Math.PI).toFixed(1)}°/s`, N0 / 2, N0 - 33); g2.fillText(`G ${gF.toFixed(1)}`, N0 / 2, N0 - 18);
   g2.fillStyle = f.m > 0.02 ? '#ffb84d' : 'rgba(255,255,255,.3)'; g2.beginPath(); g2.arc(N0 - 20, 24, 7, 0, 7); g2.fill(); g2.strokeStyle = 'rgba(255,255,255,.5)'; g2.lineWidth = 1.5; g2.beginPath(); g2.arc(N0 - 20, 24, 12, 0, 7); g2.stroke();   // the engine light
-  g2.strokeStyle = s.col; g2.lineWidth = 3; g2.strokeRect(1.5, 1.5, N0 - 3, N0 - 3);                                // the frame in the lander's colour
   g2.setTransform(1, 0, 0, 1, 0, 0);
 }
 // charts, tables and strips are redrawn about three times a second, the live numbers and the camera every frame (~12 a second): a flight lasts tens of seconds
@@ -4525,11 +4527,12 @@ const OPS_WIDE_PX = 1700;                                  // this wide (CSS pix
 const opsTier = () => $('opsGrid').parentElement.clientWidth >= OPS_WIDE_PX ? 'wide' : 'std';
 function opsExpand(s) { return s.split(' ').map(t => { const [n, c] = t.slice(1).split('*'); return Array(+c).fill(n).join(' '); }).join(' '); }       // '@kp*3 @vw*2' -> 'kp kp kp vw vw'
 function opsBuildLayout(name) {                            // put the panels of a layout into the grid (the other panels are not built, so they cost nothing)
-  const L = OPS_LAYOUTS[name] || OPS_LAYOUTS.deck, tier = opsTier(), T = L.tiers[tier] || L.tiers.std, rows = SHOW && T.show ? T.show : T.areas, grid = $('opsGrid');
+  const L = OPS_LAYOUTS[name] || OPS_LAYOUTS.deck, tier = opsTier(), T = L.tiers[tier] || L.tiers.std, base = SHOW && T.show ? T.show : T.areas, key = (OPS_LAYOUTS[name] ? name : 'deck') + ':' + tier + (SHOW ? ':show' : ''),
+    rows = opsAreasValid(OPS.areaH[key], base) ? OPS.areaH[key] : base, grid = $('opsGrid');
   OPS.layout = OPS_LAYOUTS[name] ? name : 'deck'; OPS.tier = tier; OPS.panels = []; OPS.html = {}; grid.innerHTML = '';
   const hs = SHOW && T.showHeights ? T.showHeights : T.heights; grid.className = 'ops-grid' + (L.dense ? ' dense' : '');
   grid.style.setProperty('--cols', T.cols || 12); grid.style.gridTemplateAreas = rows.map(r => `"${r}"`).join(' ');
-  OPS.rowKey = OPS.layout + ':' + tier + (SHOW ? ':show' : ''); OPS.hs = hs; opsApplyRows();
+  OPS.rowKey = OPS.layout + ':' + tier + (SHOW ? ':show' : ''); OPS.hs = hs; OPS.rows = rows; opsApplyRows();
   for (const id of [...new Set(rows.join(' ').split(/\s+/))]) {
     const tpl = $('opsT-' + id); if (!tpl || !OPS_PANELS[id]) continue;
     const el = tpl.content.firstElementChild.cloneNode(true); el.style.gridArea = id; if (OPS_PANELS[id].wide) el.classList.add('wide');
@@ -4540,6 +4543,7 @@ function opsBuildLayout(name) {                            // put the panels of 
     const g = document.createElement('div'); g.className = 'rgrip'; g.dataset.row = k; g.style.gridRow = `${k + 1} / ${k + 2}`; g.style.gridColumn = '1 / -1';
     g.title = 'Drag to make this row taller or shorter. Double-click: back to the default.'; g.innerHTML = '<i></i>'; grid.appendChild(g);
   });
+  opsColGrips();
   opsLayoutButtons(); opsMarkTabs('src', OPS.src); OPS_TABKEYS.forEach(k => opsMarkTabs(k, OPS[k]));
   try { localStorage.setItem('spacexperiment.opslayout', OPS.layout); } catch (e) { /* storage may be blocked */ }
   OPS.t = 0; OPS.slowT = 0;
@@ -4550,6 +4554,42 @@ function opsApplyRows() {                                 // fixed row heights (
   const mine = OPS.rowH[OPS.rowKey] || {};
   $('opsGrid').style.gridTemplateRows = OPS.hs ? OPS.hs.map((v, k) => v === 'auto' ? 'auto' : (mine[k] ? mine[k] + 'px' : v)).join(' ') : 'none';
 }
+function opsAreaStore() { try { return JSON.parse(localStorage.getItem('spacexperiment.opsareas') || '{}') || {}; } catch (e) { return {}; } }
+function opsAreaSave() { try { localStorage.setItem('spacexperiment.opsareas', JSON.stringify(OPS.areaH)); } catch (e) { /* storage may be blocked */ } }
+function opsAreasOk(M) {                                   // every panel must still be one rectangle
+  const box = {};
+  M.forEach((row, r) => row.forEach((n, c) => { const b = box[n] || (box[n] = { r0: r, r1: r, c0: c, c1: c, n: 0 }); b.r0 = Math.min(b.r0, r); b.r1 = Math.max(b.r1, r); b.c0 = Math.min(b.c0, c); b.c1 = Math.max(b.c1, c); b.n++; }));
+  return Object.values(box).every(b => b.n === (b.r1 - b.r0 + 1) * (b.c1 - b.c0 + 1));
+}
+function opsAreasValid(saved, base) {                      // a saved arrangement is used only if it has the same rows, columns and panels as the layout
+  if (!Array.isArray(saved) || saved.length !== base.length) return false;
+  const S = saved.map(r => String(r).split(/\s+/)), B = base.map(r => r.split(/\s+/)), names = M => [...new Set(M.flat())].sort().join(' ');
+  return S.every((r, k) => r.length === B[k].length) && names(S) === names(B) && opsAreasOk(S);
+}
+function opsMoveEdge(rows, r, c, d, minC) {                // move the boundary at column line c of row r by d columns (+ = right); null if a panel would get too narrow or stop being a rectangle
+  const M = rows.map(x => x.split(/\s+/)), A = M[r][c - 1];
+  const hit = M.map((row, k) => row[c - 1] === A && row[c] !== A ? k : -1).filter(k => k >= 0);                  // every row where A ends at this line (A may span rows)
+  if (!d || !hit.includes(r)) return null;
+  const moved = new Set([A]);
+  for (const k of hit) {
+    const row = M[k], B = row[c]; moved.add(B);
+    if (d > 0) { for (let q = c; q < c + d; q++) { if (row[q] !== B) return null; row[q] = A; } }
+    else { for (let q = c + d; q < c; q++) { if (q < 0 || row[q] !== A) return null; row[q] = B; } }
+  }
+  for (const n of moved) { const row = M.find(x => x.includes(n)); if (row.filter(x => x === n).length < minC) return null; }      // only the panels whose edge moved must keep the minimum width
+  return opsAreasOk(M) ? M.map(row => row.join(' ')) : null;
+}
+function opsColGrips() {                                   // one side tab in the gap between each pair of neighbouring panels
+  const grid = $('opsGrid'); grid.querySelectorAll('.cgrip').forEach(g => g.remove());
+  (OPS.rows || []).forEach((row, r) => {
+    const M = row.split(/\s+/);
+    for (let c = 1; c < M.length; c++) {
+      if (M[c] === M[c - 1]) continue;
+      const g = document.createElement('div'); g.className = 'cgrip'; g.dataset.r = r; g.dataset.c = c; g.style.gridRow = `${r + 1} / ${r + 2}`; g.style.gridColumn = `${c + 1} / ${c + 2}`;
+      g.title = 'Drag sideways to widen one panel and narrow the other. Double-click: all widths back to the default.'; g.innerHTML = '<i></i>'; grid.appendChild(g);
+    }
+  });
+}
 function opsLayoutButtons() { $('opsLayouts').style.display = Object.keys(OPS_LAYOUTS).length > 1 ? '' : 'none'; $('opsLayouts').innerHTML = Object.entries(OPS_LAYOUTS).map(([k, v]) => `<button data-layout="${k}" class="${k === OPS.layout ? 'on' : ''}">${v.label}</button>`).join(''); }
 function opsWire() {                                       // one delegated listener: the panels are rebuilt whenever the layout changes
   $('ops').addEventListener('click', e => {
@@ -4558,7 +4598,7 @@ function opsWire() {                                       // one delegated list
     else if (OPS_TABKEYS.some(k => b.dataset[k])) { const k = OPS_TABKEYS.find(k => b.dataset[k]); OPS[k] = b.dataset[k]; opsMarkTabs(k, OPS[k]); }
     else if (b.dataset.layout) opsBuildLayout(b.dataset.layout);
     else if (b.id === 'opsSimPause') togglePause(false);
-    else if (b.id === 'opsRowsReset') { OPS.rowH = {}; opsRowSave(); opsApplyRows(); OPS.slowT = 0; }
+    else if (b.id === 'opsRowsReset') { OPS.rowH = {}; opsRowSave(); OPS.areaH = {}; opsAreaSave(); opsBuildLayout(OPS.layout); }
     else if (b.id === 'opsSimRestart') opsSeek(0);
     else if (b.id === 'opsSimEnd') opsSeek(1);
     else if (b.id === 'opsSimFollow') $('followBtn').click();
@@ -4569,11 +4609,25 @@ function opsWire() {                                       // one delegated list
   $('ops').addEventListener('pointerdown', e => {          // drag a pull tab: the row follows the pointer (at least 60 px)
     const g = e.target.closest('.rgrip'); if (!g) return;
     e.preventDefault(); const k = +g.dataset.row, h0 = parseFloat(getComputedStyle($('opsGrid')).gridTemplateRows.split(' ')[k]), y0 = e.clientY;
-    g.setPointerCapture(e.pointerId); g.classList.add('on');
+    try { g.setPointerCapture(e.pointerId); } catch (err) { /* a synthetic pointer */ } g.classList.add('on');
     const move = ev => { const mine = OPS.rowH[OPS.rowKey] || (OPS.rowH[OPS.rowKey] = {}); mine[k] = Math.round(Math.max(60, Math.min(1400, h0 + ev.clientY - y0))); opsApplyRows(); OPS.slowT = 0; };
     const up = () => { g.removeEventListener('pointermove', move); g.removeEventListener('pointerup', up); g.removeEventListener('pointercancel', up); g.classList.remove('on'); opsRowSave(); };
     g.addEventListener('pointermove', move); g.addEventListener('pointerup', up); g.addEventListener('pointercancel', up);
   });
+  $('ops').addEventListener('pointerdown', e => {          // drag a side tab: the boundary snaps to whole grid columns
+    const g = e.target.closest('.cgrip'); if (!g) return;
+    e.preventDefault(); const grid = $('opsGrid'), cs = getComputedStyle(grid), tracks = cs.gridTemplateColumns.split(' ').map(parseFloat), pitch = tracks[0] + parseFloat(cs.columnGap || 0);
+    const r = +g.dataset.r, c = +g.dataset.c, base = OPS.rows.slice(), x0 = e.clientX, minC = Math.max(2, Math.round(tracks.length / 6));
+    try { g.setPointerCapture(e.pointerId); } catch (err) { /* a synthetic pointer */ } g.classList.add('on');
+    const move = ev => {
+      let d = Math.round((ev.clientX - x0) / pitch), next = null; while (d && !(next = opsMoveEdge(base, r, c, d, minC))) d -= Math.sign(d);
+      next = next || base; if (next.join('|') === OPS.rows.join('|')) return;
+      OPS.rows = next; grid.style.gridTemplateAreas = next.map(x => `"${x}"`).join(' '); g.style.gridColumn = `${c + d + 1} / ${c + d + 2}`; OPS.slowT = 0;
+    };
+    const up = () => { g.removeEventListener('pointermove', move); g.removeEventListener('pointerup', up); g.removeEventListener('pointercancel', up); g.classList.remove('on'); OPS.areaH[OPS.rowKey] = OPS.rows; opsAreaSave(); opsColGrips(); };
+    g.addEventListener('pointermove', move); g.addEventListener('pointerup', up); g.addEventListener('pointercancel', up);
+  });
+  $('ops').addEventListener('dblclick', e => { if (!e.target.closest('.cgrip')) return; delete OPS.areaH[OPS.rowKey]; opsAreaSave(); opsBuildLayout(OPS.layout); });
   $('ops').addEventListener('dblclick', e => { const g = e.target.closest('.rgrip'); if (!g) return; const mine = OPS.rowH[OPS.rowKey]; if (mine) delete mine[+g.dataset.row]; opsApplyRows(); opsRowSave(); OPS.slowT = 0; });
   $('ops').addEventListener('input', e => { if (e.target.id === 'opsSimSeek') opsSeek(+e.target.value / 1000); });
 }
@@ -4678,7 +4732,7 @@ function opsInit() {
   const _landPush = landPush;                              // count finished landings for the "Policy performance" panel, then do what the main screen always did
   landPush = function (s) { try { const r = s.ep && s.ep.result; if (r) { OPS.done.push({ ok: !!r.success, merit: +r.merit || 0, speed: +r.speed, dist: +r.dist, end: r.end }); if (OPS.done.length > 100) OPS.done.shift(); } } catch (e) { /* never block the main screen */ } return _landPush(s); };
   new IntersectionObserver(es => { OPS.vis = es[0].isIntersecting; }, { threshold: 0.02 }).observe($('ops'));
-  OPS.rowH = opsRowStore();
+  OPS.rowH = opsRowStore(); OPS.areaH = opsAreaStore();
   let saved = 'deck'; try { saved = localStorage.getItem('spacexperiment.opslayout') || 'deck'; } catch (e) { /* storage may be blocked */ }
   opsBuildLayout(OPS_LAYOUTS[saved] ? saved : 'deck');
   let rz = 0; new ResizeObserver(() => { clearTimeout(rz); rz = setTimeout(() => { if (opsTier() !== OPS.tier) opsBuildLayout(OPS.layout); }, 150); }).observe($('opsGrid').parentElement);
