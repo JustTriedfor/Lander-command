@@ -267,12 +267,12 @@
   /* panels of the Console layout */
   .dec { font-size:12px; } .dr { display:grid; grid-template-columns:70px 1fr 42px; align-items:center; gap:8px; padding:3px 0; } .dr span { color:#aab9d6; } .dr b { text-align:right; font-variant-numeric:tabular-nums; }
   .dbar { position:relative; height:8px; background:#10294a; border-radius:4px; overflow:hidden; } .dbar i { position:absolute; top:0; height:100%; } .dbar::after { content:""; position:absolute; left:50%; top:0; width:1px; height:100%; background:#2c4a73; }
-  .tsw { overflow:auto; flex:1 1 auto; max-height:236px; } .tsw::-webkit-scrollbar { width:8px; } .tsw::-webkit-scrollbar-thumb { background:#1a3a63; border-radius:4px; }
+  .tsw { overflow:auto; flex:1 1 0; min-height:110px; } .tsw::-webkit-scrollbar { width:8px; } .tsw::-webkit-scrollbar-thumb { background:#1a3a63; border-radius:4px; }
   .tst { width:100%; border-collapse:collapse; font-size:11.5px; font-variant-numeric:tabular-nums; } .tst th { position:sticky; top:0; background:#0a1730; text-align:left; color:var(--om); font:600 10px system-ui; letter-spacing:.1em; text-transform:uppercase; padding:3px 6px; }
   .tst td { padding:3px 6px; border-top:1px solid #10294a; } .tst td:first-child { color:#6d86a8; font-family:Consolas,monospace; } .tst td:nth-child(3) { text-align:right; font-weight:600; color:#fff; } .tst td:last-child { color:var(--om); }
   /* the Deck layout: roomier panels, section labels, a strip of key readings, a phase timeline, gauges */
   .ops-grid.dense { gap:12px; } .ops-grid.dense > .op { padding:12px 14px 14px; border-radius:12px; } .ops-grid.dense > .op h3 { margin-bottom:8px; font-size:10.5px; letter-spacing:.14em; }
-  .ops-grid.dense .envk { font-size:12px; } .ops-grid.dense .envk div { padding:3px 0; } .ops-grid.dense .nnnote { font-size:11px; } .ops-grid.dense .tgbox { grid-template-columns:minmax(0,1fr) 128px; } .ops-grid.dense .tsw { max-height:200px; } .ops-grid.dense .tst td { padding:2px 6px; }
+  .ops-grid.dense .envk { font-size:12px; } .ops-grid.dense .envk div { padding:3px 0; } .ops-grid.dense .nnnote { font-size:11px; } .ops-grid.dense .tgbox { grid-template-columns:minmax(0,1fr) 128px; } .ops-grid.dense .tsw { max-height:none; } .ops-grid.dense .tst td { padding:2px 6px; }
   .op.bare { background:none; border:0; box-shadow:none; padding:0 !important; }
   .sec { display:flex; align-items:center; gap:14px; align-self:end; font:600 11px system-ui; letter-spacing:.22em; text-transform:uppercase; color:#6f93bd; } .sec::after { content:""; flex:1; height:1px; background:linear-gradient(90deg,#1b4a7c,transparent); }
   .kpi { display:grid; grid-template-columns:repeat(var(--kpn, 8), minmax(0,1fr)); gap:12px; height:100%; } .kpi > div { position:relative; display:flex; flex-direction:column; min-width:0; padding:8px 12px 6px; border:1px solid var(--ob); border-radius:14px; overflow:hidden; background:linear-gradient(180deg, rgba(13,30,58,.82), rgba(6,14,28,.9)); box-shadow:inset 0 0 0 1px rgba(56,199,255,.05), 0 0 22px rgba(20,90,170,.10); }
@@ -289,6 +289,17 @@
   /* key/value grids (Flight so far, All parameters) */
   .kvg { display:grid; grid-template-columns:repeat(var(--kc, 3), minmax(0,1fr)); gap:0 20px; font-size:11.5px; align-content:start; } .kvg > div { display:flex; justify-content:space-between; gap:8px; padding:2.5px 0; border-bottom:1px solid #10294a; }
   .kvg span { color:var(--om); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .kvg b { font-variant-numeric:tabular-nums; white-space:nowrap; } .kvg b i { font-style:normal; font-weight:400; color:var(--om); margin-left:3px; }
+  /* fuller panels */
+  .sub3 { font:600 9.5px system-ui; letter-spacing:.13em; text-transform:uppercase; color:#6f93bd; margin:10px 0 4px; }
+  .pht { width:100%; border-collapse:collapse; margin-top:10px; font-size:11px; font-variant-numeric:tabular-nums; } .pht th { text-align:right; color:var(--om); font:600 9.5px system-ui; letter-spacing:.1em; text-transform:uppercase; padding:3px 5px; }
+  .pht td { text-align:right; padding:3px 5px; border-top:1px solid #10294a; color:#b9cde8; } .pht th:first-child, .pht td:first-child { text-align:left; } .pht tr.now td { color:#fff; font-weight:600; } .pht tr.todo td { color:#4d6283; }
+  .scr { flex-direction:row; flex-wrap:wrap; justify-content:center; gap:8px 18px; } .scl { width:auto; flex:1 1 160px; }
+  .envc { display:grid; grid-template-columns:1fr 1fr; gap:12px; flex:1 1 auto; min-height:120px; margin-top:10px; } .envc canvas { width:100%; height:100%; min-height:120px; }
+  .seek { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; margin:12px 0 10px; } .seek input { flex:1 1 120px; min-width:0; accent-color:#38c7ff; } .seek span { font:11px Consolas,monospace; color:var(--om); white-space:nowrap; }
+  .simc + .simc, .seek + .simc { margin-top:2px; } .simc button { padding:6px 12px; font-size:12px; }
+  .keys { margin-top:12px; font-size:11px; line-height:2.1; color:#8fa6c8; } .keys kbd { display:inline-block; min-width:18px; text-align:center; padding:0 5px; margin:0 3px 0 9px; border:1px solid #2c4a73; border-radius:4px; background:#0a1730; font:600 10px Consolas,monospace; color:#cfe3ff; } .keys kbd + kbd { margin-left:0; }
+  .rcg { display:grid; grid-template-columns:minmax(150px,1fr) minmax(0,1.1fr); gap:16px; flex:1 1 auto; min-height:0; } .rcg canvas { width:100%; height:100%; min-height:170px; }
+  .ostrip { display:grid; grid-template-columns:repeat(20, minmax(0,1fr)); gap:3px; width:100%; margin-top:12px; } .ostrip i { display:block; height:10px; border-radius:2px; }
 </style>
 </head>
 <body>
@@ -472,29 +483,29 @@
             <div class="nnbox"><canvas id="opsNet" style="height:118px"></canvas></div>
             <div class="nncols" id="opsNnCols"></div><div class="nnnote" id="opsNnNote"></div></div></template>
 <template id="opsT-tr"><div class="op"><h3>Training progress</h3>
-            <canvas id="opsTrain" style="height:118px"></canvas><div class="bar2"><i id="opsTrBar"></i></div><div class="nnnote" id="opsTrInfo">idle</div></div></template>
+            <canvas id="opsTrain" class="cc"></canvas><div class="bar2"><i id="opsTrBar"></i></div><div class="nnnote" id="opsTrInfo">idle</div></div></template>
 <template id="opsT-at"><div class="op"><h3>Attitude <span style="text-transform:none;letter-spacing:.04em;font-weight:500;color:#5f7699">2-D: tilt only, no roll or yaw</span></h3>
             <canvas id="opsAtt" style="flex:1 1 auto;min-height:120px"></canvas><div class="nnnote" id="opsAttTxt"></div></div></template>
             <div class="nncols" id="opsThrKv" style="grid-template-columns:repeat(4,1fr);margin:0 0 6px"></div>
             <canvas id="opsThr" style="flex:1 1 auto;min-height:96px"></canvas><div class="nnnote">last 12 s &middot; <span style="color:#ffb347">throttle</span> 0&ndash;100 % &middot; <span style="color:#38c7ff">gimbal</span> and <span style="color:#6ee7a8">grid fins</span> each between &minus;limit and +limit</div></div></template>
             <canvas id="opsPath" style="flex:1 1 auto;min-height:130px"></canvas><div class="nnnote" id="opsPathTxt"></div></div></template>
-<template id="opsT-sq"><div class="op"><h3>Landing sequence</h3><div class="sq" id="opsSeq"></div></div></template>
+<template id="opsT-sq"><div class="op"><h3>Landing sequence</h3><div class="sq" id="opsSeq"></div><table class="pht" id="opsSeqT"></table></div></template>
 <template id="opsT-sc"><div class="op"><h3>Landing score</h3>
             <div class="scr"><div class="ring"><svg viewBox="0 0 120 120"><circle class="rg-bg" cx="60" cy="60" r="50"/><circle class="rg-fg" id="opsScRing" cx="60" cy="60" r="50" transform="rotate(-90 60 60)" stroke-dasharray="314.16" stroke-dashoffset="314.16"/></svg><div class="ring-c"><b id="opsScVal">&mdash;</b><span>of 100</span></div></div>
-              <div class="scl" id="opsScL"></div></div><div class="nnnote" id="opsScNote"></div></div></template>
+              <div class="scl" id="opsScL"></div></div><div class="nnnote" id="opsScNote"></div><div id="opsScRules"></div><div class="sub3">scores of recent landings</div><canvas id="opsScHist" style="height:38px"></canvas></div></template>
 <template id="opsT-pf"><div class="op"><h3>Policy performance</h3>
             <div class="pf"><div class="ring"><svg viewBox="0 0 120 120"><circle class="rg-bg" cx="60" cy="60" r="50"/><circle class="rg-fg" id="opsPfRing" cx="60" cy="60" r="50" transform="rotate(-90 60 60)" stroke-dasharray="314.16" stroke-dashoffset="314.16"/></svg><div class="ring-c"><b id="opsPfVal">&mdash;</b><span>LANDED</span></div></div>
-              <div class="pfk" id="opsPfK"></div></div></div></template>
-<template id="opsT-en"><div class="op"><h3>Environment</h3><div class="envk" id="opsEnv"></div></div></template>
+              <div class="pfk" id="opsPfK"></div></div><div class="ostrip" id="opsPfStrip"></div><div class="nnnote" id="opsPfStripN"></div><div class="sub3">merit of recent landings</div><canvas id="opsPfHist" style="height:38px"></canvas></div></template>
+<template id="opsT-en"><div class="op"><h3>Environment</h3><div class="envk" id="opsEnv"></div><div class="envc"><canvas id="opsEnvW"></canvas><canvas id="opsEnvQ"></canvas></div></div></template>
 <template id="opsT-lg"><div class="op"><h3>Simulation log</h3><div class="ops-log" id="opsLog"></div></div></template>
 <template id="opsT-tg"><div class="op"><h3>Trajectory &amp; guidance <span style="text-transform:none;letter-spacing:.04em;font-weight:500;color:#5f7699">side view</span></h3><div class="tgbox"><canvas id="opsPath2"></canvas><div class="tgk" id="opsTgK"></div></div><div class="nnnote" id="opsPathTxt2"></div></div></template>
 <template id="opsT-rw"><div class="op"><h3>Reward breakdown <span style="text-transform:none;letter-spacing:.04em;font-weight:500;color:#5f7699">total so far this flight</span></h3><div class="rwl" id="opsRw"></div></div></template>
-<template id="opsT-lp"><div class="op"><h3>Landing pad <span style="text-transform:none;letter-spacing:.04em;font-weight:500;color:#5f7699">deck from the side</span></h3><canvas id="opsPad" style="flex:1 1 auto;min-height:100px"></canvas><div class="nnnote" id="opsPadTxt"></div></div></template>
-<template id="opsT-sim"><div class="op"><h3>Simulation controls</h3><div class="simc"><button id="opsSimPause">Pause</button><label>Speed <select id="opsSimSpeed"><option value="1">1x</option><option value="2">2x</option><option value="4">4x</option></select></label></div><div class="nnnote" id="opsSimNote"></div></div></template>
+<template id="opsT-lp"><div class="op"><h3>Approach to the pad <span style="text-transform:none;letter-spacing:.04em;font-weight:500;color:#5f7699">height and offset on log scales</span></h3><canvas id="opsPad" class="cc"></canvas><div class="nnnote" id="opsPadTxt"></div></div></template>
+<template id="opsT-sim"><div class="op"><h3>Simulation controls</h3><div class="simc"><button id="opsSimRestart" title="back to the start of this flight">&#9198; Restart</button><button id="opsSimPause">Pause</button><button id="opsSimEnd" title="jump to the touchdown">To touchdown &#9197;</button><label>Speed <select id="opsSimSpeed"><option value="1">1x</option><option value="2">2x</option><option value="4">4x</option></select></label></div><div class="seek"><input type="range" id="opsSimSeek" min="0" max="1000" value="0" title="drag to move through this flight"><span id="opsSimT">&mdash;</span></div><div class="simc"><button id="opsSimFollow">Follow cam</button><button id="opsSimCam">Auto camera</button><button id="opsSimPanels">Hide picture panels</button></div><div class="keys">Keys on the main screen:<kbd>Space</kbd>pause<kbd>F</kbd>full screen<kbd>H</kbd>panels<kbd>C</kbd>auto camera<kbd>V</kbd>follow cam<kbd>L</kbd>layout<kbd>1</kbd><kbd>2</kbd><kbd>4</kbd>speed</div><div class="nnnote" id="opsSimNote" style="margin-top:auto"></div></div></template>
 <template id="opsT-de"><div class="op"><h3>Live decisions</h3><div class="dec" id="opsDeBody"></div><div class="nnnote" style="display:flex;justify-content:space-between;margin-top:8px"><span>Reward, last 10 s</span><b id="opsDeSum" style="color:#3dd68c"></b></div><canvas id="opsDeRw" style="height:46px"></canvas></div></template>
-<template id="opsT-pr"><div class="op"><h3>Propulsion system <span class="seg2" id="opsPrTabs"><button data-pr="eng" class="on">Engines</button><button data-pr="fuel">Fuel</button></span></h3><div class="envk" id="opsPrBody"></div><div class="nnnote">The simulator has no thermal model, so no engine temperature or chamber pressure is shown.</div></div></template>
+<template id="opsT-pr"><div class="op"><h3>Propulsion system <span class="seg2" id="opsPrTabs"><button data-pr="eng" class="on">Engines</button><button data-pr="fuel">Fuel</button></span></h3><div class="envk" id="opsPrBody"></div><div class="sub3">engine and thrusters over the flight</div><canvas id="opsPrT" style="height:58px"></canvas><div class="nnnote"><span style="color:#ffb347">throttle</span> &middot; <span style="color:#9fe6ff">RCS A pulses</span> &middot; <span style="color:#d6a8ff">RCS B pulses</span> &middot; no thermal model, so no engine temperature or chamber pressure</div></div></template>
 <template id="opsT-ts"><div class="op"><h3>Telemetry readings <span class="seg2" id="opsTsTabs"><button data-ts="all" class="on">All</button><button data-ts="flight">Flight</button><button data-ts="propulsion">Propulsion</button><button data-ts="guidance">Guidance</button><button data-ts="control">Control</button><button data-ts="environment">Environment</button><button data-ts="simulation">Simulation</button></span></h3><div class="tsw"><table class="tst" id="opsTs"></table></div><div class="nnnote">* with the engines off from now</div></div></template>
-<template id="opsT-rc"><div class="op"><h3>Rocket configuration</h3><div class="envk" id="opsRc"></div></div></template>
+<template id="opsT-rc"><div class="op"><h3>Rocket configuration</h3><div class="rcg"><canvas id="opsRcDraw"></canvas><div class="envk" id="opsRc"></div></div></div></template>
 <template id="opsT-ph"><div class="op slim"><div class="phw"><div class="pn"><b id="opsPhN">&mdash;</b><span id="opsPhT"></span></div><div class="rail" id="opsRail"></div></div></div></template>
 <template id="opsT-sy"><div class="op"><h3>Systems</h3><div id="opsSy"></div></div></template>
 <template id="opsT-mg"><div class="op"><h3>Landing margins</h3><div id="opsMg"></div><div class="nnnote" style="margin-top:auto;padding-top:8px">green = comfortable &middot; amber = tight &middot; red = out of margin</div></div></template>
@@ -4009,18 +4020,6 @@ function opsStep(st, k) {                                  // state of phase k (
 }
 function opsStarts(st) { const p = opsPh(st).p; return [0, p.ign, p.burn, p.fin, p.td >= 0 ? p.td : (st.done ? st.fr.length - 1 : -1)]; }
 const opsTAt = (st, k) => { const s = opsStarts(st)[k]; return s >= 0 && k + 1 <= opsPh(st).ph ? 'T+' + (s * FDT).toFixed(1) + ' s' : '—'; };
-function opsPad(st) {                                      // the deck from the side: where the stage is, where it would land with the engines off, and the landing zone
-  const { x, w, h } = opsCtx('opsPad'), f = st.f, pr = coastPredict(f, st.K.vx, st.K.vy, st.m), half = (PAD[1] - PAD[0]) / 2, gy = h - 46;
-  const span = Math.max(60, Math.abs(st.dx), Math.abs(pr.x - PADC), half) * 1.2, px = v => w / 2 + (v - PADC) / span * (w / 2 - 10);
-  x.fillStyle = '#0a1e3a'; x.fillRect(0, gy, w, h - gy);
-  x.fillStyle = '#44526c'; x.fillRect(px(PADC - half), gy - 5, px(PADC + half) - px(PADC - half), 9);
-  x.strokeStyle = '#3dd68c'; x.lineWidth = 2; [-1, 1].forEach(s => { const bx = px(PADC + s * VEH.zone); x.beginPath(); x.moveTo(bx, gy - 16); x.lineTo(bx, gy - 6); x.stroke(); }); x.beginPath(); x.moveTo(px(PADC - VEH.zone), gy - 11); x.lineTo(px(PADC + VEH.zone), gy - 11); x.stroke();
-  x.setLineDash([3, 3]); x.strokeStyle = '#f2c46b'; x.lineWidth = 1.4; x.beginPath(); x.moveTo(px(pr.x), gy - 28); x.lineTo(px(pr.x), gy + 6); x.stroke(); x.setLineDash([]);
-  const cx = px(f.x), cy = gy - 40; x.fillStyle = '#fff'; x.beginPath(); x.moveTo(cx, cy - 8); x.lineTo(cx - 5, cy + 6); x.lineTo(cx + 5, cy + 6); x.closePath(); x.fill();
-  x.strokeStyle = 'rgba(255,255,255,.25)'; x.lineWidth = 1; x.beginPath(); x.moveTo(cx, cy + 8); x.lineTo(cx, gy - 6); x.stroke();
-  x.font = '10px system-ui'; x.textAlign = 'center'; x.fillStyle = '#6d86a8'; x.fillText('pad centre', px(PADC), gy + 18); x.fillStyle = '#f2c46b'; x.fillText('engines off: lands here', Math.max(60, Math.min(w - 60, px(pr.x))), gy + 34);
-  opsSet('opsPadTxt', `stage ${Math.abs(st.dx).toFixed(1)} m ${st.dx >= 0 ? 'right' : 'left'} of the centre · deck ${(2 * half).toFixed(0)} m wide · landing zone ±${VEH.zone} m (green)`);
-}
 const OPS_PANELS = {
   vw: { wide: true, update(st) {
     if (!st) { opsNote('opsView', OPS_WAIT); opsSet('opsVwTag', ''); return; }
@@ -4034,26 +4033,7 @@ const OPS_PANELS = {
   } },
   tr: { update() { opsMirror('opsTrain', $('chart'), false); opsSet('opsTrInfo', $('pinfo').textContent); $('opsTrBar').style.width = $('pbar').style.width || '0%'; } },
   at: { update(st) { if (st) opsAtt(st); else { opsNote('opsAtt', OPS_WAIT); opsSet('opsAttTxt', ''); } } },
-  sq: { wide: true, update(st) {
-    opsHtml('opsSeq', OPS_PH.map((n, k) => `<div class="${st ? opsStep(st, k + 1) : ''}"><b>${k + 1}</b>${n[1]}<i>${st ? opsTAt(st, k) : '—'}</i></div>`).join(''));
-  } },
-  sc: { update(st) {                                       // the merit of the finished landing; nothing is predicted while it flies
-    const r = st && st.done ? st.s.ep.result : null; if (r) OPS.last = r;
-    const last = OPS.last;
-    opsRing('opsScRing', last ? (last.merit || 0) / 100 : 0, last && last.success ? 'ok' : last ? 'warn' : '');
-    opsSet('opsScVal', last ? String(Math.round(last.merit || 0)) : '—');
-    const chk = (label, val, pass) => `<div><span>${label}</span><b class="${pass ? 'ok' : 'no'}">${val}</b></div>`;
-    opsHtml('opsScL', last ? chk('touchdown speed', `${(+last.speed).toFixed(2)} m/s`, last.speed <= VEH.soft_speed) + chk('from centre', `${(+last.dist).toFixed(1)} m`, last.dist <= VEH.zone) + chk('outcome', OPS_END[last.end] || last.end, !!last.success)
-      : '<div><span>flying</span><b>score at touchdown</b></div>');
-    opsSet('opsScNote', last ? (r ? 'merit of this landing (0–100)' : 'merit of the last finished landing') : 'the merit is only known once the flight ends');
-  } },
   pf: { update() { opsPolicy(); } },
-  en: { update(st) {
-    if (!st) { opsHtml('opsEnv', '<div><span>waiting for a flight</span><b></b></div>'); return; }
-    const { f, h, speed } = st, dens = 1.225 * Math.exp(-h / 8400), wd = f.wd;
-    opsHtml('opsEnv', [['wind', wd === undefined ? '—' : `${Math.abs(wd).toFixed(1)} m/s ${wd >= 0 ? 'toward +x' : 'toward −x'}`], ['air density (model)', dens.toFixed(3) + ' kg/m³'], ['dynamic pressure', ((f.q || 0) / 1000).toFixed(1) + ' kPa'],
-      ['Mach (340 m/s)', (speed / 340).toFixed(2)], ['gravity', TL.g.toFixed(2) + ' m/s²']].map(a => `<div><span>${a[0]}</span><b>${a[1]}</b></div>`).join(''));
-  } },
   lg: { update() { opsLog('opsLog'); } },
   // ---- panels added for the Mission layout
   tg: { wide: true, update(st) {
@@ -4062,18 +4042,7 @@ const OPS_PANELS = {
     opsHtml('opsTgK', row('Target x', '0.0 m') + row('Target y', '0.0 m') + row('Current x', st.dx.toFixed(1) + ' m') + row('Current y', st.h.toFixed(1) + ' m') + row('Distance', dist.toFixed(1) + ' m') +
       row('Touchdown*', 'T+' + ((st.i * FDT) + pred.t).toFixed(1) + ' s') + row('Time to go*', pred.t.toFixed(1) + ' s') + '<div style="display:block;border:0;font-size:10.5px;color:#5f7699">* with the engines off from now</div>');
   } },
-  rw: { update(st) {                                       // the reward terms of the flight so far (the same numbers as the main screen's Reward waterfall)
-    if (!st) { opsHtml('opsRw', `<div class="op-empty">${OPS_WAIT}</div>`); return; }
-    const tot = {}; for (let j = 0; j <= st.i; j++) { const t = st.fr[j].t; if (t) for (const k in t) tot[k] = (tot[k] || 0) + t[k]; }
-    const items = Object.entries(tot).filter(e => Math.abs(e[1]) >= 0.5).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 7), mx = Math.max(1, ...items.map(e => Math.abs(e[1])));
-    opsHtml('opsRw', items.length ? items.map(([k, v]) => `<div class="rwr"><span title="${k}">${k.replace(/_/g, ' ')}</span><div class="rwb"><i class="${v >= 0 ? 'pos' : 'neg'}" style="width:${(Math.abs(v) / mx * 100).toFixed(0)}%"></i></div><b>${v >= 0 ? '+' : '−'}${Math.abs(Math.round(v))}</b></div>`).join('') : '<div class="op-empty">no reward terms yet</div>');
-  } },
   lp: { update(st) { if (st) opsPad(st); else { opsNote('opsPad', OPS_WAIT); opsSet('opsPadTxt', ''); } } },
-  sim: { update() {                                        // drives the same pause button and speed menu as the main screen
-    opsSet('opsSimPause', paused ? 'Resume' : 'Pause');
-    const sel = $('opsSimSpeed'); if (sel && sel.value !== $('speed').value && document.activeElement !== sel) sel.value = $('speed').value;
-    opsSet('opsSimNote', 'The trained network flies by itself: this simulator has no manual mode.');
-  } },
 };
 const OPS_LAYOUTS = {};                                     // name -> { label, areas, heights, show, showHeights, dense }: see OPS_LAYOUTS.deck below
 // ---- more panels: Live decisions, Propulsion system, Telemetry readings, Rocket configuration
@@ -4112,23 +4081,10 @@ Object.assign(OPS_PANELS, {
     const { x, w, h } = opsCtx('opsDeRw'), lo = Math.min(0, ...cum), hi = Math.max(0, ...cum) || 1;
     x.strokeStyle = '#3dd68c'; x.lineWidth = 1.6; x.beginPath(); cum.forEach((v, j) => { const px = j / Math.max(1, cum.length - 1) * w, py = h - 3 - (v - lo) / (hi - lo || 1) * (h - 6); j ? x.lineTo(px, py) : x.moveTo(px, py); }); x.stroke();
   } },
-  pr: { update(st) {
-    if (!st) { opsHtml('opsPrBody', `<div class="op-empty">${OPS_WAIT}</div>`); return; }
-    const { f, m } = st, thr = f.thr || 0, flow = opsFlow(st), D = 57.2958, fuel = f.fuel * VEH.budget;
-    opsHtml('opsPrBody', OPS.pr === 'fuel'
-      ? opsRow('Propellant', `${Math.round(fuel).toLocaleString()} kg`) + opsRow('Fuel remaining', `${(f.fuel * 100).toFixed(1)} %`) + opsRow('Budget', `${VEH.budget.toLocaleString()} kg`) + opsRow('Propellant flow', `${flow.toFixed(0)} kg/s`) +
-        opsRow('Burn time left at this flow', flow > 1 ? `${(fuel / flow).toFixed(1)} s` : '—') + opsRow('RCS gas', `${Math.round((f.gas === undefined ? 1 : f.gas) * 100)} %`) + opsRow('Mass', `${Math.round(m).toLocaleString()} kg`)
-      : opsRow('Engine 1', thr > 0 ? '<span style="color:#3dd68c">ON</span>' : 'off') + opsRow('Throttle', `${Math.round((f.m || 0) * 100)} %`) + opsRow('Thrust', `${(thr / 1000).toFixed(0)} kN`) + opsRow('Thrust / weight', (thr / (m * TL.g)).toFixed(2)) +
-        opsRow('Gimbal (TVC)', `${((f.g || 0) * D).toFixed(2)}°`) + opsRow('Propellant flow', `${flow.toFixed(0)} kg/s`));
-  } },
   ts: { wide: true, update(st) {
     if (!st) { opsHtml('opsTs', `<tr><td class="op-empty">${OPS_WAIT}</td></tr>`); return; }
     const t = opsTplus(st.i * FDT), rows = opsParams(st).filter(p => OPS.ts === 'all' || p[0] === OPS.ts);
     opsHtml('opsTs', '<tr><th>Time</th><th>Parameter</th><th>Value</th><th>Unit</th></tr>' + rows.map(p => `<tr><td>${t}</td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td></tr>`).join(''));
-  } },
-  rc: { update() {
-    opsHtml('opsRc', opsRow('Vehicle', 'Falcon 9-class stage (simulated)') + opsRow('Height', `${VEH.length} m`) + opsRow('Diameter', `${VEH.diameter} m`) + opsRow('Dry mass', `${VEH.dry.toLocaleString()} kg`) + opsRow('Propellant budget', `${VEH.budget.toLocaleString()} kg`) +
-      opsRow('Thrust, sea level / vacuum', `${Math.round(VEH.thrust_sl / 1000)} / ${Math.round(VEH.thrust_vac / 1000)} kN`) + opsRow('Throttle range', `${Math.round(VEH.throttle_min * 100)}–100 %`) + opsRow('Gimbal limit', `±${(VEH.gimbal_max * 57.2958).toFixed(1)}°`));
   } },
 });
 // ---- the Deck: a dense dashboard grouped under section labels: a strip of key readings (each with a trend line), a phase timeline, combined charts, gauges and margins
@@ -4377,11 +4333,168 @@ OPS_LAYOUTS.deck = { label: 'Deck', dense: true, tiers: {
     showHeights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '250px', 'auto', '262px', 'auto', '272px', '200px', '240px'] },
   wide: { cols: 24, kpCount: 12,                                          // from about 1700 px of dock width (a big screen, or a browser zoomed out): twice the columns and the extra panels
     areas: ['@kp*24', '@ph*24', '@s1*24', '@vw*8 @fp*6 @gd*6 @sy*4', '@vw*8 @ac*6 @pw*6 @mg*4', '@s2*24', '@tg*6 @fo*6 @ey*6 @rh*6', '@s3*24', '@nn*6 @de*4 @at*3 @pr*4 @fs*7',
-      '@s4*24', '@ts*6 @pg*8 @rw*4 @lp*6', '@sq*6 @sc*4 @en*4 @sim*3 @ls*7', '@lg*8 @rc*4 @tr*6 @pf*6'].map(opsExpand),
+      '@s4*24', '@ts*6 @pg*8 @rw*4 @lp*6', '@sq*6 @sc*4 @en*4 @sim*4 @ls*6', '@lg*7 @rc*5 @tr*6 @pf*6'].map(opsExpand),
     heights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '262px', 'auto', '270px', 'auto', '280px', '220px', '240px'],
     show: ['@kp*24', '@ph*24', '@s1*24', '@vw*8 @fp*6 @gd*6 @sy*4', '@vw*8 @ac*6 @pw*6 @mg*4', '@s2*24', '@tg*6 @fo*6 @ey*6 @rh*6', '@s3*24', '@nn*6 @de*4 @at*3 @pr*4 @fs*7',
-      '@s4*24', '@ts*6 @pg*8 @rw*4 @lp*6', '@sq*6 @sc*4 @en*4 @sim*3 @ls*7', '@lg*16 @rc*8'].map(opsExpand),
+      '@s4*24', '@ts*6 @pg*8 @rw*4 @lp*6', '@sq*6 @sc*4 @en*4 @sim*4 @ls*6', '@lg*14 @rc*10'].map(opsExpand),
     showHeights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '262px', 'auto', '270px', 'auto', '280px', '220px', '240px'] } } };
+// ---- fuller panels: each one uses its whole height (a phase table, the landing rules live, profiles against altitude, playback controls, reward by phase,
+// a log-scale approach view, a drawing of the stage, an outcome strip, an engine and thruster timeline)
+function opsPhaseRows(st) {                                               // [phase index, first frame, frame where the next phase starts (or the shown frame)]; -1 when not started
+  const { ph } = opsPh(st), s = opsStarts(st), out = [];
+  for (let k = 0; k < 5; k++) {
+    if (k + 1 > ph || s[k] < 0) { out.push([k, -1, -1]); continue; }
+    let e = st.i; for (let q = k + 1; q < ph; q++) if (s[q] >= 0) { e = s[q]; break; }
+    out.push([k, s[k], e]);
+  }
+  return out;
+}
+function opsVsAlt(id, pts, col, label, unit) {                            // a value (across) against altitude (up), over the flight so far; pts = [[value, altitude], ...]
+  const { x, w, h } = opsCtx(id), L = 34, R = 6, T = 16, B = 16; if (pts.length < 2) return;
+  const top = Math.max(50, ...pts.map(p => p[1])), xs = pts.map(p => p[0]), [lo, hi, step] = opsNice4(Math.min(0, ...xs), Math.max(0, ...xs));
+  const px = v => L + (v - lo) / (hi - lo) * (w - L - R), py = a => h - B - a / top * (h - T - B);
+  x.font = '10px system-ui'; x.strokeStyle = '#10294a'; x.fillStyle = '#6d86a8'; x.lineWidth = 1; x.textAlign = 'right';
+  for (let k = 0; k <= 4; k++) { const a = top * k / 4, y = py(a); x.beginPath(); x.moveTo(L, y); x.lineTo(w - R, y); x.stroke(); x.fillText(a >= 1000 ? (a / 1000).toFixed(1) + 'k' : String(Math.round(a)), L - 4, y + 3); }
+  x.textAlign = 'center'; for (let k = 0; k <= 4; k += 2) x.fillText(opsTick(lo + k * step), px(lo + k * step), h - 4);
+  if (lo < 0 && hi > 0) { x.strokeStyle = '#2c4a73'; x.beginPath(); x.moveTo(px(0), T); x.lineTo(px(0), h - B); x.stroke(); }
+  x.strokeStyle = col; x.lineWidth = 1.7; x.beginPath(); pts.forEach((p, j) => j ? x.lineTo(px(p[0]), py(p[1])) : x.moveTo(px(p[0]), py(p[1]))); x.stroke();
+  const q = pts[pts.length - 1]; x.fillStyle = '#fff'; x.beginPath(); x.arc(px(q[0]), py(q[1]), 2.8, 0, 7); x.fill();
+  x.textAlign = 'left'; x.fillStyle = col; x.fillText(`${label}, ${unit}`, L, 10); x.fillStyle = '#6d86a8'; x.textAlign = 'right'; x.fillText('altitude, m', w - R, 10);
+}
+function opsSeek(frac) {                                                  // move the playhead of the shown flight (it is recorded, so nothing is simulated again)
+  const s = slots[brainSel]; if (!s || !s.ep) return;
+  const n = s.ep.frames.length, t = Math.round(opsClamp(frac, 0, 1) * (n - 1));
+  if (t <= s.last) { s.last = t - 1; s.tm = null; }                       // going back: the frames after t are replayed (and the terminal reports them again)
+  s.fi = t; if (s.state === 'hold') s.state = 'play';
+  if (paused) s.last = t;
+  OPS.t = 0;
+}
+function opsStageDraw(id) {                                               // the stage to scale, with where the centre of mass, grid fins, thrusters and legs sit (from the vehicle description)
+  const { x, w, h } = opsCtx(id), Lm = VEH.length, span = VEH.span || 18, T = 12, B = 22, s = Math.min((h - T - B) / (Lm + 2), (w - 66) / (span + 2));
+  const cx = 8 + (span / 2 + 1) * s, base = h - B, half = VEH.diameter / 2 * s, at = z => base - z * s, lab = cx + (span / 2) * s + 12;   // z = metres above the engine bells
+  x.strokeStyle = '#7d93b5'; x.lineWidth = 2; [-1, 1].forEach(g => { x.beginPath(); x.moveTo(cx + g * half, at(6)); x.lineTo(cx + g * span / 2 * s, at(-(VEH.foot || 1))); x.stroke(); });
+  x.fillStyle = '#44526c'; x.fillRect(cx - span / 2 * s - 6, at(-(VEH.foot || 1)), span * s + 12, 3);
+  x.fillStyle = '#9aa7ff'; x.beginPath(); x.moveTo(cx - half * 0.6, base); x.lineTo(cx + half * 0.6, base); x.lineTo(cx + half * 0.9, base + 6); x.lineTo(cx - half * 0.9, base + 6); x.closePath(); x.fill();
+  x.fillStyle = '#dce9fb'; x.fillRect(cx - half, at(Lm), 2 * half, Lm * s); x.fillStyle = '#7d93b5'; x.fillRect(cx - half, at(Lm) + 2, 2 * half, 3);
+  const mark = (z, col, text) => { const y = at(z); x.strokeStyle = col; x.lineWidth = 1; x.setLineDash([2, 2]); x.beginPath(); x.moveTo(cx + half + 2, y); x.lineTo(lab - 4, y); x.stroke(); x.setLineDash([]); x.fillStyle = col; x.textAlign = 'left'; x.fillText(text, lab, y + 3); };
+  x.font = '10px system-ui';
+  x.strokeStyle = '#38c7ff'; x.lineWidth = 2; const fy = at(VEH.cg + VEH.fin_arm); x.beginPath(); x.moveTo(cx - half - 7, fy); x.lineTo(cx + half + 7, fy); x.stroke(); mark(VEH.cg + VEH.fin_arm, '#38c7ff', 'grid fins');
+  x.fillStyle = '#9fe6ff'; x.fillRect(cx - half - 3, at(VEH.cg + VEH.rcs_a) - 2, 2 * half + 6, 4); mark(VEH.cg + VEH.rcs_a, '#9fe6ff', 'RCS A');
+  x.fillStyle = '#d6a8ff'; x.fillRect(cx - half - 3, at(VEH.cg + VEH.rcs_b) - 2, 2 * half + 6, 4); mark(VEH.cg + VEH.rcs_b, '#d6a8ff', 'RCS B');
+  x.fillStyle = '#ff6b6b'; x.beginPath(); x.arc(cx, at(VEH.cg), 4, 0, 7); x.fill(); mark(VEH.cg, '#ff8f8f', `CG ${VEH.cg} m`);
+  x.strokeStyle = '#5f7699'; x.lineWidth = 1; x.beginPath(); x.moveTo(cx - span / 2 * s - 2, at(Lm)); x.lineTo(cx - span / 2 * s - 2, base); x.stroke();
+  x.save(); x.translate(cx - span / 2 * s - 6, (at(Lm) + base) / 2); x.rotate(-Math.PI / 2); x.textAlign = 'center'; x.fillStyle = '#8fb4d8'; x.fillText(`${Lm} m`, 0, 0); x.restore();
+  x.fillStyle = '#6d86a8'; x.textAlign = 'center'; x.fillText(`legs ${span} m apart`, cx, h - 4);
+}
+function opsEngineStrip(st) {                                             // the throttle over the flight (filled) and every RCS pulse as a tick (A upper row, B lower row)
+  const { x, w, h } = opsCtx('opsPrT'), { fr, i } = st, n = fr.length, mid = Math.round(h * 0.58), top = 4, X = j => j / Math.max(1, n - 1) * w;
+  x.fillStyle = '#10294a'; x.fillRect(0, mid, w, 1);
+  x.fillStyle = 'rgba(255,179,71,.55)'; x.beginPath(); x.moveTo(0, mid); for (let j = 0; j <= i; j++) x.lineTo(X(j), mid - (fr[j].m || 0) * (mid - top)); x.lineTo(X(i), mid); x.closePath(); x.fill();
+  for (let j = 0; j <= i; j++) { if (Math.abs(fr[j].r1 || 0) > 0.1) { x.fillStyle = '#9fe6ff'; x.fillRect(X(j), mid + 4, 1.4, 5); } if (Math.abs(fr[j].r2 || 0) > 0.1) { x.fillStyle = '#d6a8ff'; x.fillRect(X(j), mid + 11, 1.4, 5); } }
+  x.fillStyle = '#fff'; x.fillRect(X(i) - 1, 0, 2, h);
+}
+function opsPad(st) {                                                     // the approach on log scales (height up, offset across), so the last metres get as much room as the first kilometres
+  const { x, w, h } = opsCtx('opsPad'), { fr } = st, pr = coastPredict(st.f, st.K.vx, st.K.vy, st.m), half = (PAD[1] - PAD[0]) / 2, L = 40, R = 10, T = 10, B = 30;
+  const slog = v => Math.sign(v) * Math.log10(1 + Math.abs(v)), trail = [], stride = Math.max(1, Math.ceil((st.i + 1) / 200));
+  for (let j = 0; j <= st.i; j += stride) trail.push([fr[j].x - PADC, Math.max(0, fr[j].y - PAD_ALT)]); trail.push([st.dx, st.h]);
+  const xMax = Math.max(2, slog(half) + 0.15, ...trail.map(p => slog(Math.abs(p[0])))), hMax = Math.max(2, ...trail.map(p => Math.log10(1 + p[1])));
+  const px = v => L + (slog(v) + xMax) / (2 * xMax) * (w - L - R), py = a => h - B - Math.log10(1 + a) / hMax * (h - T - B);
+  x.font = '10px system-ui'; x.lineWidth = 1;
+  [0, 1, 10, 100, 1000, 10000].forEach(a => { if (Math.log10(1 + a) > hMax + 1e-9) return; const y = py(a); x.strokeStyle = '#10294a'; x.beginPath(); x.moveTo(L, y); x.lineTo(w - R, y); x.stroke(); x.fillStyle = '#6d86a8'; x.textAlign = 'right'; x.fillText(a >= 1000 ? a / 1000 + ' km' : a + ' m', L - 4, y + 3); });
+  [-1000, -100, -10, 10, 100, 1000].forEach(v => { if (slog(Math.abs(v)) > xMax) return; const X = px(v); x.strokeStyle = Math.abs(v) === 10 ? 'rgba(61,214,140,.35)' : '#10294a'; x.beginPath(); x.moveTo(X, T); x.lineTo(X, h - B); x.stroke(); x.fillStyle = '#6d86a8'; x.textAlign = 'center'; x.fillText((v > 0 ? '+' : '−') + Math.abs(v) + ' m', X, h - B + 13); });
+  x.fillStyle = 'rgba(61,214,140,.07)'; x.fillRect(px(-VEH.zone), T, px(VEH.zone) - px(-VEH.zone), h - B - T);
+  x.fillStyle = '#44526c'; x.fillRect(px(-half), h - B - 2, px(half) - px(-half), 6); x.fillStyle = '#3dd68c'; x.fillRect(px(-VEH.zone), h - B - 2, px(VEH.zone) - px(-VEH.zone), 6);
+  x.strokeStyle = '#38c7ff'; x.lineWidth = 1.8; x.beginPath(); trail.forEach((p, j) => j ? x.lineTo(px(p[0]), py(p[1])) : x.moveTo(px(p[0]), py(p[1]))); x.stroke();
+  const xp = px(pr.x - PADC); x.setLineDash([3, 3]); x.strokeStyle = '#f2c46b'; x.lineWidth = 1.4; x.beginPath(); x.moveTo(xp, h - B - 16); x.lineTo(xp, h - B + 4); x.stroke(); x.setLineDash([]);
+  const cx = px(st.dx), cy = py(st.h); x.fillStyle = 'rgba(255,255,255,.2)'; x.beginPath(); x.arc(cx, cy, 8, 0, 7); x.fill(); x.fillStyle = '#fff'; x.beginPath(); x.arc(cx, cy, 3.5, 0, 7); x.fill();
+  x.fillStyle = '#6d86a8'; x.textAlign = 'center'; x.fillText('offset from the pad centre, log scale', (L + w - R) / 2, h - 3);
+  opsSet('opsPadTxt', `stage ${Math.abs(st.dx).toFixed(1)} m ${st.dx >= 0 ? 'right' : 'left'} of the centre and ${st.h.toFixed(1)} m up · green = landing zone ±${VEH.zone} m on a ${(2 * half).toFixed(0)} m deck · dashed = engines-off touchdown`);
+}
+function opsPolicy() {                                                    // the landings finished while this page has been open (last 100), with an outcome strip of the last 40
+  const d = OPS.done, n = d.length, ok = d.filter(e => e.ok).length, avg = k => n ? d.reduce((t, e) => t + (isFinite(e[k]) ? e[k] : 0), 0) / n : 0;
+  opsSet('opsPfVal', n ? Math.round(100 * ok / n) + '%' : '—'); opsRing('opsPfRing', n ? ok / n : 0, n && ok / n >= 0.8 ? 'ok' : n && ok / n < 0.4 ? 'bad' : '');
+  opsHtml('opsPfK', n ? [['landings seen', n], ['strict successes', ok], ['average merit', avg('merit').toFixed(1)], ['average touchdown', avg('speed').toFixed(2) + ' m/s'], ['average from centre', avg('dist').toFixed(1) + ' m']].map(a => `<div><span>${a[0]}</span><b>${a[1]}</b></div>`).join('')
+    : '<div><span>no finished landing yet</span><b></b></div>');
+  const last = d.slice(-40);
+  opsHtml('opsPfStrip', last.map(e => `<i title="merit ${Math.round(e.merit)} · ${(+e.speed).toFixed(2)} m/s · ${(+e.dist).toFixed(1)} m" style="background:${e.ok ? OPS_GOOD : e.end === 'rest' ? OPS_WARN : OPS_BAD}"></i>`).join(''));
+  opsSet('opsPfStripN', last.length ? `last ${last.length} landings, oldest first: green = success, amber = down outside the rules, red = lost` : 'each finished landing adds a square here');
+  const m = last.map(e => e.merit); if (m.length >= 2) opsSpark('opsPfHist', m, '#3dd68c'); else opsCtx('opsPfHist');
+}
+Object.assign(OPS_PANELS, {
+  sq: { wide: true, update(st) {
+    opsHtml('opsSeq', OPS_PH.map((n, k) => `<div class="${st ? opsStep(st, k + 1) : ''}"><b>${k + 1}</b>${n[1]}<i>${st ? opsTAt(st, k) : '—'}</i></div>`).join(''));
+    if (!st) { opsHtml('opsSeqT', ''); return; }
+    const ph = opsPh(st).ph;
+    opsHtml('opsSeqT', '<tr><th>Phase</th><th>Starts</th><th>Lasts</th><th>Altitude</th><th>Speed</th><th>Propellant</th></tr>' + opsPhaseRows(st).map(([k, a, e]) => {
+      if (a < 0) return `<tr class="todo"><td>${OPS_PH[k][1]}</td><td>—</td><td></td><td></td><td></td><td></td></tr>`;
+      const f = st.fr[a], v = opsVel(st.fr, a);
+      return `<tr class="${k + 1 === ph && !st.done ? 'now' : ''}"><td>${OPS_PH[k][1]}</td><td>T+${(a * FDT).toFixed(1)} s</td><td>${((e - a) * FDT).toFixed(1)} s</td><td>${Math.round(Math.max(0, f.y - PAD_ALT)).toLocaleString()} m</td><td>${Math.hypot(v.vx, v.vy).toFixed(1)} m/s</td><td>${Math.round(f.fuel * VEH.budget).toLocaleString()} kg</td></tr>`;
+    }).join(''));
+  } },
+  sc: { update(st) {                                                      // the merit of the finished landing, the four landing rules (live while it flies), and the scores of recent landings
+    const r = st && st.done ? st.s.ep.result : null; if (r) OPS.last = r;
+    const last = OPS.last;
+    opsRing('opsScRing', last ? (last.merit || 0) / 100 : 0, last && last.success ? 'ok' : last ? 'warn' : '');
+    opsSet('opsScVal', last ? String(Math.round(last.merit || 0)) : '—');
+    const chk = (label, val, pass) => `<div><span>${label}</span><b class="${pass ? 'ok' : 'no'}">${val}</b></div>`;
+    opsHtml('opsScL', last ? chk('touchdown speed', `${(+last.speed).toFixed(2)} m/s`, last.speed <= VEH.soft_speed) + chk('from centre', `${(+last.dist).toFixed(1)} m`, last.dist <= VEH.zone) + chk('outcome', OPS_END[last.end] || last.end, !!last.success)
+      : '<div><span>flying</span><b>score at touchdown</b></div>');
+    opsSet('opsScNote', last ? (r ? 'merit of this landing (0–100)' : 'merit of the last finished landing') : 'the merit is only known once the flight ends');
+    if (!st) opsHtml('opsScRules', '');
+    else {
+      const sp = r ? +r.speed : st.speed, off = r ? +r.dist : Math.abs(st.dx), tilt = Math.abs(st.f.a), fuel = st.f.fuel, D = 57.2958;
+      opsHtml('opsScRules', `<div class="sub3">${r ? 'the four landing rules, at touchdown' : 'the four landing rules, if it touched down now'}</div>` + [
+        opsGauge(`Speed ≤ ${VEH.soft_speed} m/s`, sp / VEH.soft_speed / 2, `${sp.toFixed(1)} m/s`, { col: sp <= VEH.soft_speed ? OPS_GOOD : OPS_BAD, mark: 0.5 }),
+        opsGauge(`Offset ≤ ${VEH.zone} m`, off / VEH.zone / 2, `${off.toFixed(1)} m`, { col: off <= VEH.zone ? OPS_GOOD : OPS_BAD, mark: 0.5 }),
+        opsGauge(`Tilt ≤ ${(OPS_TILT_OK * D).toFixed(1)}°`, tilt / OPS_TILT_OK / 2, `${(tilt * D).toFixed(1)}°`, { col: tilt <= OPS_TILT_OK ? OPS_GOOD : OPS_BAD, mark: 0.5 }),
+        opsGauge('Fuel left', fuel, `${Math.round(fuel * VEH.budget).toLocaleString()} kg`, { col: fuel > 0 ? OPS_GOOD : OPS_BAD })].join(''));
+    }
+    const m = OPS.done.slice(-40).map(e => e.merit);
+    if (m.length >= 2) opsSpark('opsScHist', m, '#3dd68c'); else opsNote('opsScHist', m.length ? 'one finished landing so far' : 'scores of finished landings appear here');
+  } },
+  en: { update(st) {
+    if (!st) { opsHtml('opsEnv', '<div><span>waiting for a flight</span><b></b></div>'); return; }
+    const { f, h, speed } = st, dens = 1.225 * Math.exp(-h / 8400), wd = f.wd;
+    opsHtml('opsEnv', [['wind', wd === undefined ? '—' : `${Math.abs(wd).toFixed(1)} m/s ${wd >= 0 ? 'toward +x' : 'toward −x'}`], ['air density (model)', dens.toFixed(3) + ' kg/m³'], ['dynamic pressure', ((f.q || 0) / 1000).toFixed(1) + ' kPa'],
+      ['Mach (340 m/s)', (speed / 340).toFixed(2)], ['gravity', TL.g.toFixed(2) + ' m/s²']].map(a => `<div><span>${a[0]}</span><b>${a[1]}</b></div>`).join(''));
+    const pts = fn => { const out = [], stride = Math.max(1, Math.ceil((st.i + 1) / 80)); for (let j = 0; j <= st.i; j += stride) out.push([fn(st.fr[j]), Math.max(0, st.fr[j].y - PAD_ALT)]); out.push([fn(f), h]); return out; };
+    opsVsAlt('opsEnvW', pts(q => q.wd || 0), '#6ee7a8', 'wind met', 'm/s'); opsVsAlt('opsEnvQ', pts(q => (q.q || 0) / 1000), '#9fe6ff', 'dynamic pressure', 'kPa');
+  } },
+  sim: { update() {                                                       // drives the main screen's pause, speed, camera and panels, and moves the playhead of the shown flight
+    opsSet('opsSimPause', paused ? 'Resume' : 'Pause');
+    const sel = $('opsSimSpeed'); if (sel && sel.value !== $('speed').value && document.activeElement !== sel) sel.value = $('speed').value;
+    const s = slots[brainSel], n = s && s.ep ? s.ep.frames.length : 0, sk = $('opsSimSeek');
+    if (sk && n && document.activeElement !== sk) sk.value = Math.round(Math.max(0, s.last) / Math.max(1, n - 1) * 1000);
+    opsSet('opsSimT', n ? `${opsTplus(Math.max(0, s.last) * FDT)} of ${(n * FDT).toFixed(1)} s` : '—');
+    opsSet('opsSimFollow', camFollow ? 'Leave follow cam' : 'Follow cam'); opsSet('opsSimPanels', document.body.classList.contains('nopanels') ? 'Show picture panels' : 'Hide picture panels');
+    opsSet('opsSimNote', 'The trained network flies by itself: this simulator has no manual mode.');
+  } },
+  rw: { update(st) {                                                      // the reward terms of the flight so far, and what each flight phase earned
+    if (!st) { opsHtml('opsRw', `<div class="op-empty">${OPS_WAIT}</div>`); return; }
+    const sumOf = (a, b) => { let s = 0; for (let j = a; j <= b; j++) { const t = st.fr[j].t; if (t) for (const k in t) s += t[k]; } return s; };
+    const tot = {}; for (let j = 0; j <= st.i; j++) { const t = st.fr[j].t; if (t) for (const k in t) tot[k] = (tot[k] || 0) + t[k]; }
+    const items = Object.entries(tot).filter(e => Math.abs(e[1]) >= 0.5).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 7);
+    const started = opsPhaseRows(st).filter(p => p[1] >= 0), per = started.map(([k, a, e], q) => [OPS_PH[k][1], sumOf(a, q === started.length - 1 ? st.i : e - 1)]);
+    const bars = (list) => { const mx = Math.max(1, ...list.map(e => Math.abs(e[1]))); return list.map(([k, v]) => `<div class="rwr"><span title="${k}">${String(k).replace(/_/g, ' ')}</span><div class="rwb"><i class="${v >= 0 ? 'pos' : 'neg'}" style="width:${(Math.abs(v) / mx * 100).toFixed(0)}%"></i></div><b>${v >= 0 ? '+' : '−'}${Math.abs(Math.round(v))}</b></div>`).join(''); };
+    opsHtml('opsRw', (items.length ? bars(items) : '<div class="op-empty">no reward terms yet</div>') + (per.length ? '<div class="sub3">points by flight phase</div>' + bars(per) : ''));
+  } },
+  rc: { update() {
+    opsHtml('opsRc', opsRow('Vehicle', 'Falcon 9-class stage (simulated)') + opsRow('Height', `${VEH.length} m`) + opsRow('Diameter', `${VEH.diameter} m`) + opsRow('Dry mass', `${VEH.dry.toLocaleString()} kg`) + opsRow('Propellant budget', `${VEH.budget.toLocaleString()} kg`) +
+      opsRow('Thrust, sea level / vacuum', `${Math.round(VEH.thrust_sl / 1000)} / ${Math.round(VEH.thrust_vac / 1000)} kN`) + opsRow('Throttle range', `${Math.round(VEH.throttle_min * 100)}–100 %`) + opsRow('Gimbal limit', `±${(VEH.gimbal_max * 57.2958).toFixed(1)}°`) +
+      opsRow('Grid fin limit', `±${(VEH.fin_max * 57.2958).toFixed(0)}°`) + opsRow('RCS thrust', `${(VEH.rcs_force / 1000).toFixed(0)} kN each`));
+    opsStageDraw('opsRcDraw');
+  } },
+  pr: { update(st) {
+    if (!st) { opsHtml('opsPrBody', `<div class="op-empty">${OPS_WAIT}</div>`); opsCtx('opsPrT'); return; }
+    const { f, m } = st, thr = f.thr || 0, flow = opsFlow(st), D = 57.2958, fuel = f.fuel * VEH.budget;
+    opsHtml('opsPrBody', OPS.pr === 'fuel'
+      ? opsRow('Propellant', `${Math.round(fuel).toLocaleString()} kg`) + opsRow('Fuel remaining', `${(f.fuel * 100).toFixed(1)} %`) + opsRow('Budget', `${VEH.budget.toLocaleString()} kg`) + opsRow('Propellant flow', `${flow.toFixed(0)} kg/s`) +
+        opsRow('Burn time left at this flow', flow > 1 ? `${(fuel / flow).toFixed(1)} s` : '—') + opsRow('RCS gas', `${Math.round((f.gas === undefined ? 1 : f.gas) * 100)} %`) + opsRow('Mass', `${Math.round(m).toLocaleString()} kg`)
+      : opsRow('Engine 1', thr > 0 ? '<span style="color:#3dd68c">ON</span>' : 'off') + opsRow('Throttle', `${Math.round((f.m || 0) * 100)} %`) + opsRow('Thrust', `${(thr / 1000).toFixed(0)} kN`) + opsRow('Thrust / weight', (thr / (m * TL.g)).toFixed(2)) +
+        opsRow('Gimbal (TVC)', `${((f.g || 0) * D).toFixed(2)}°`) + opsRow('Propellant flow', `${flow.toFixed(0)} kg/s`));
+    opsEngineStrip(st);
+  } },
+});
 function opsMarkTabs(key, val) { document.querySelectorAll(`[data-${key}]`).forEach(b => b.classList.toggle('on', b.dataset[key] === val)); }
 const OPS_WIDE_PX = 1700;                                  // this wide (CSS pixels) or wider: the "wide" arrangement, otherwise the standard one
 const opsTier = () => $('opsGrid').parentElement.clientWidth >= OPS_WIDE_PX ? 'wide' : 'std';
@@ -4409,19 +4522,19 @@ function opsWire() {                                       // one delegated list
     else if (OPS_TABKEYS.some(k => b.dataset[k])) { const k = OPS_TABKEYS.find(k => b.dataset[k]); OPS[k] = b.dataset[k]; opsMarkTabs(k, OPS[k]); }
     else if (b.dataset.layout) opsBuildLayout(b.dataset.layout);
     else if (b.id === 'opsSimPause') togglePause(false);
+    else if (b.id === 'opsSimRestart') opsSeek(0);
+    else if (b.id === 'opsSimEnd') opsSeek(1);
+    else if (b.id === 'opsSimFollow') $('followBtn').click();
+    else if (b.id === 'opsSimCam') { setCamFollow(false); setCamAuto(true); }
+    else if (b.id === 'opsSimPanels') document.body.classList.toggle('nopanels');
   });
   $('ops').addEventListener('change', e => { if (e.target.id === 'opsSimSpeed') $('speed').value = e.target.value; });
+  $('ops').addEventListener('input', e => { if (e.target.id === 'opsSimSeek') opsSeek(+e.target.value / 1000); });
 }
 function opsOverview(st) {
   for (const id of OPS.panels) { try { OPS_PANELS[id].update(st); } catch (e) { console.warn('monitoring ground panel ' + id + ':', e); } }
 }
 
-function opsPolicy() {                                     // the landings finished while this page has been open (last 100)
-  const d = OPS.done, n = d.length, ok = d.filter(e => e.ok).length, avg = k => n ? d.reduce((t, e) => t + (isFinite(e[k]) ? e[k] : 0), 0) / n : 0;
-  opsSet('opsPfVal', n ? Math.round(100 * ok / n) + '%' : '—'); opsRing('opsPfRing', n ? ok / n : 0, n && ok / n >= 0.8 ? 'ok' : n && ok / n < 0.4 ? 'bad' : '');
-  opsHtml('opsPfK', n ? [['landings seen', n], ['strict successes', ok], ['average merit', avg('merit').toFixed(1)], ['average touchdown', avg('speed').toFixed(2) + ' m/s'], ['average from centre', avg('dist').toFixed(1) + ' m']].map(a => `<div><span>${a[0]}</span><b>${a[1]}</b></div>`).join('')
-    : '<div><span>no finished landing yet</span><b></b></div>');
-}
 function opsNetPanel(st) {
   if (!SHOW && !st.s.ep.act && st.s.noAct !== st.s.ep.id) fetchAct(st.s);      // the network's numbers are only sent on request (once per episode; recorded showcase landings have none)
   const n = actAt(st.s), on = $('opsNnSt');
@@ -4516,7 +4629,7 @@ function opsInit() {
   $('opsPause').onchange = () => { OPS.paused = $('opsPause').checked; };
   document.querySelectorAll('#ops-settings [data-goto]').forEach(b => b.onclick = () => { const t = document.querySelector(`.tabs button[data-pane="${b.dataset.goto}"]`); if (t) t.click(); $('lower').scrollIntoView({ behavior: 'smooth' }); });
   const _landPush = landPush;                              // count finished landings for the "Policy performance" panel, then do what the main screen always did
-  landPush = function (s) { try { const r = s.ep && s.ep.result; if (r) { OPS.done.push({ ok: !!r.success, merit: +r.merit || 0, speed: +r.speed, dist: +r.dist }); if (OPS.done.length > 100) OPS.done.shift(); } } catch (e) { /* never block the main screen */ } return _landPush(s); };
+  landPush = function (s) { try { const r = s.ep && s.ep.result; if (r) { OPS.done.push({ ok: !!r.success, merit: +r.merit || 0, speed: +r.speed, dist: +r.dist, end: r.end }); if (OPS.done.length > 100) OPS.done.shift(); } } catch (e) { /* never block the main screen */ } return _landPush(s); };
   new IntersectionObserver(es => { OPS.vis = es[0].isIntersecting; }, { threshold: 0.02 }).observe($('ops'));
   let saved = 'deck'; try { saved = localStorage.getItem('spacexperiment.opslayout') || 'deck'; } catch (e) { /* storage may be blocked */ }
   opsBuildLayout(OPS_LAYOUTS[saved] ? saved : 'deck');
