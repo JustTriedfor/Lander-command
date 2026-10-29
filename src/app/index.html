@@ -228,7 +228,7 @@
   .ops-ctl button { cursor:pointer; } .ops-ctl button:hover { border-color:var(--oa); }
   .ops-chip { padding:2px 10px; border-radius:20px; border:1px solid var(--ob); font-size:11px; letter-spacing:.1em; color:var(--om); } .ops-chip.live { color:var(--ook); border-color:#1f6b4a; } .ops-chip.hold { color:var(--ow); border-color:#6b5a1f; }
   .ops-pane { display:none; } .ops-pane.on { display:block; }
-  .ops-grid { display:grid; gap:10px; grid-template-columns:repeat(12, minmax(0,1fr)); grid-auto-rows:minmax(196px, auto); }                     /* the areas and rows come from the chosen layout (OPS_LAYOUTS) */
+  .ops-grid { display:grid; gap:10px; grid-template-columns:repeat(var(--cols, 12), minmax(0,1fr)); grid-auto-rows:minmax(196px, auto); }                     /* the areas and rows come from the chosen layout (OPS_LAYOUTS) */
   @media (max-width:1180px) { .kpi { grid-template-columns:repeat(4, minmax(0,1fr)); } .ops-grid > .sec { grid-area:auto !important; grid-column:1 / -1 !important; } .ops-grid { grid-template-columns:repeat(6, minmax(0,1fr)); grid-template-areas:none !important; grid-template-rows:none !important; } .ops-grid > .op { grid-area:auto !important; grid-column:span 3 !important; } .ops-grid > .op.wide { grid-column:span 6 !important; }
     .ops-shell { grid-template-columns:56px minmax(0,1fr); } .ops-nav button { justify-content:center; font-size:0; gap:0; } .ops-logo, .ops-foot { display:none; } }
   @media (max-width:700px) { .kpi { grid-template-columns:repeat(2, minmax(0,1fr)); } .phw { grid-template-columns:1fr; gap:10px; } .ops-grid { grid-template-columns:1fr; } .ops-grid > .op, .ops-grid > .op.wide { grid-column:1 / -1 !important; } }
@@ -275,7 +275,7 @@
   .ops-grid.dense .envk { font-size:12px; } .ops-grid.dense .envk div { padding:3px 0; } .ops-grid.dense .nnnote { font-size:11px; } .ops-grid.dense .tgbox { grid-template-columns:minmax(0,1fr) 128px; } .ops-grid.dense .tsw { max-height:200px; } .ops-grid.dense .tst td { padding:2px 6px; }
   .op.bare { background:none; border:0; box-shadow:none; padding:0 !important; }
   .sec { display:flex; align-items:center; gap:14px; align-self:end; font:600 11px system-ui; letter-spacing:.22em; text-transform:uppercase; color:#6f93bd; } .sec::after { content:""; flex:1; height:1px; background:linear-gradient(90deg,#1b4a7c,transparent); }
-  .kpi { display:grid; grid-template-columns:repeat(8, minmax(0,1fr)); gap:12px; height:100%; } .kpi > div { position:relative; display:flex; flex-direction:column; min-width:0; padding:8px 12px 6px; border:1px solid var(--ob); border-radius:14px; overflow:hidden; background:linear-gradient(180deg, rgba(13,30,58,.82), rgba(6,14,28,.9)); box-shadow:inset 0 0 0 1px rgba(56,199,255,.05), 0 0 22px rgba(20,90,170,.10); }
+  .kpi { display:grid; grid-template-columns:repeat(var(--kpn, 8), minmax(0,1fr)); gap:12px; height:100%; } .kpi > div { position:relative; display:flex; flex-direction:column; min-width:0; padding:8px 12px 6px; border:1px solid var(--ob); border-radius:14px; overflow:hidden; background:linear-gradient(180deg, rgba(13,30,58,.82), rgba(6,14,28,.9)); box-shadow:inset 0 0 0 1px rgba(56,199,255,.05), 0 0 22px rgba(20,90,170,.10); }
   .kpi .l { font:600 10.5px system-ui; letter-spacing:.15em; text-transform:uppercase; color:var(--om); } .kpi .v { display:flex; align-items:baseline; gap:5px; } .kpi .v b { font:600 23px/1.15 system-ui; font-variant-numeric:tabular-nums; color:#fff; } .kpi .v i { font-style:normal; font-size:13px; color:var(--om); }
   .kpi .s { font-size:11px; color:#6d86a8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:1.3em; } .kpi canvas { width:100%; height:22px; margin-top:auto; border-radius:0; }
   .phw { display:grid; grid-template-columns:minmax(150px, 220px) minmax(0,1fr); gap:24px; align-items:center; height:100%; } .pn b { display:block; font:600 19px system-ui; letter-spacing:.02em; } .pn span { font:12px Consolas,monospace; color:var(--om); }
@@ -286,6 +286,9 @@
   @media (max-width:700px) { .kpi { grid-template-columns:repeat(2, minmax(0,1fr)); } .phw { grid-template-columns:1fr; gap:10px; } .gr { grid-template-columns:100px minmax(0,1fr) 90px; } }
   .cc { flex:1 1 auto; min-height:110px; } .cl { display:flex; flex-wrap:wrap; gap:3px 12px; margin-top:6px; font-size:10.5px; color:#9db3d3; } .cl span { display:inline-flex; align-items:center; gap:5px; white-space:nowrap; } .cl svg { width:24px; height:6px; } .cl i { font-style:normal; color:#5f7699; }
   .gb { position:relative; height:9px; border-radius:5px; background:#10294a; } .gb i { position:absolute; top:0; height:100%; border-radius:5px; } .gb.c::after { content:""; position:absolute; left:50%; top:-2px; width:1px; height:13px; background:#2c4a73; } .gb u { position:absolute; top:-2px; width:2px; height:13px; background:#cfe3ff; opacity:.75; }
+  /* key/value grids (Flight so far, All parameters) */
+  .kvg { display:grid; grid-template-columns:repeat(var(--kc, 3), minmax(0,1fr)); gap:0 20px; font-size:11.5px; align-content:start; } .kvg > div { display:flex; justify-content:space-between; gap:8px; padding:2.5px 0; border-bottom:1px solid #10294a; }
+  .kvg span { color:var(--om); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .kvg b { font-variant-numeric:tabular-nums; white-space:nowrap; } .kvg b i { font-style:normal; font-weight:400; color:var(--om); margin-left:3px; }
 </style>
 </head>
 <body>
@@ -499,11 +502,17 @@
 <template id="opsT-s2"><div class="sec">Trajectory and guidance</div></template>
 <template id="opsT-s3"><div class="sec">AI and systems</div></template>
 <template id="opsT-s4"><div class="sec">Data and log</div></template>
-<template id="opsT-kp"><div class="op bare"><div class="kpi"><div><span class="l">Altitude</span><span class="v"><b id="kp0v">&mdash;</b><i id="kp0u"></i></span><span class="s" id="kp0s"></span><canvas id="kp0c"></canvas></div><div><span class="l">Speed</span><span class="v"><b id="kp1v">&mdash;</b><i id="kp1u"></i></span><span class="s" id="kp1s"></span><canvas id="kp1c"></canvas></div><div><span class="l">Sideways</span><span class="v"><b id="kp2v">&mdash;</b><i id="kp2u"></i></span><span class="s" id="kp2s"></span><canvas id="kp2c"></canvas></div><div><span class="l">Thrust</span><span class="v"><b id="kp3v">&mdash;</b><i id="kp3u"></i></span><span class="s" id="kp3s"></span><canvas id="kp3c"></canvas></div><div><span class="l">Propellant</span><span class="v"><b id="kp4v">&mdash;</b><i id="kp4u"></i></span><span class="s" id="kp4s"></span><canvas id="kp4c"></canvas></div><div><span class="l">Tilt</span><span class="v"><b id="kp5v">&mdash;</b><i id="kp5u"></i></span><span class="s" id="kp5s"></span><canvas id="kp5c"></canvas></div><div><span class="l">Pad offset</span><span class="v"><b id="kp6v">&mdash;</b><i id="kp6u"></i></span><span class="s" id="kp6s"></span><canvas id="kp6c"></canvas></div><div><span class="l">Time to go*</span><span class="v"><b id="kp7v">&mdash;</b><i id="kp7u"></i></span><span class="s" id="kp7s"></span><canvas id="kp7c"></canvas></div></div></div></template>
+<template id="opsT-kp"><div class="op bare"><div class="kpi" id="opsKpi"></div></div></template>
 <template id="opsT-fp"><div class="op"><h3>Flight profile</h3><canvas id="opsFp" class="cc"></canvas><div class="cl" id="opsFpL"></div></div></template>
 <template id="opsT-gd"><div class="op"><h3>Guidance</h3><canvas id="opsGd" class="cc"></canvas><div class="cl" id="opsGdL"></div></div></template>
 <template id="opsT-ac"><div class="op"><h3>Attitude &amp; control</h3><canvas id="opsAc" class="cc"></canvas><div class="cl" id="opsAcL"></div></div></template>
 <template id="opsT-pw"><div class="op"><h3>Propulsion</h3><canvas id="opsPw" class="cc"></canvas><div class="cl" id="opsPwL"></div></div></template>
+<template id="opsT-fo"><div class="op"><h3>Forces</h3><canvas id="opsFo" class="cc"></canvas><div class="cl" id="opsFoL"></div></div></template>
+<template id="opsT-ey"><div class="op"><h3>Energy</h3><canvas id="opsEy" class="cc"></canvas><div class="cl" id="opsEyL"></div></div></template>
+<template id="opsT-rh"><div class="op"><h3>Reward history</h3><canvas id="opsRh" class="cc"></canvas><div class="cl" id="opsRhL"></div></div></template>
+<template id="opsT-fs"><div class="op"><h3>Flight so far</h3><div class="kvg" id="opsFs" style="--kc:2"></div></div></template>
+<template id="opsT-pg"><div class="op"><h3>All parameters</h3><div class="kvg" id="opsPg" style="--kc:3"></div><div class="nnnote" style="margin-top:auto;padding-top:6px">* with the engines off from now</div></div></template>
+<template id="opsT-ls"><div class="op"><h3>Landing scatter</h3><canvas id="opsLs" class="cc"></canvas><div class="nnnote" id="opsLsN"></div></div></template>
 <div class="lower" id="lower">
 <div class="below">
 <div class="grid">
@@ -4153,15 +4162,13 @@ const OPS_KP = [                                                          // the
   ['Tilt', '#c78bff', st => [(st.f.a * 57.2958).toFixed(1), '\u00b0'], () => `landing needs \u2264 ${(OPS_TILT_OK * 57.2958).toFixed(1)}\u00b0`, st => opsSeries(st, (fr, j) => Math.abs(fr[j].a * 57.2958))],
   ['Pad offset', '#6ee7a8', st => [Math.abs(st.dx).toFixed(1), 'm'], () => `landing needs \u2264 ${VEH.zone} m`, st => opsSeries(st, (fr, j) => Math.abs(fr[j].x - PADC))],
   ['Time to go*', '#38c7ff', st => [coastPredict(st.f, st.K.vx, st.K.vy, st.m).t.toFixed(1), 's'], () => 'engines off from now', st => opsPred(st).map(p => p[2])],
+  ['Fall speed', '#38c7ff', st => [Math.max(0, -st.K.vy).toFixed(1), 'm/s'], () => 'vertical', st => opsSeries(st, (fr, j) => Math.max(0, -opsVel(fr, j).vy))],
+  ['Mass', '#9aa7ff', st => [(st.m / 1000).toFixed(2), 't'], st => `${Math.round(st.m).toLocaleString()} kg`, st => opsSeries(st, (fr, j) => (fr[j].mass || 26000) / 1000)],
+  ['Dyn. pressure', '#9fe6ff', st => [((st.f.q || 0) / 1000).toFixed(1), 'kPa'], st => `drag ${((st.f.dr || 0) / 1000).toFixed(1)} kN`, st => opsSeries(st, (fr, j) => (fr[j].q || 0) / 1000)],
+  ['Spin', '#c78bff', st => [(st.K.w * 57.2958).toFixed(1), '\u00b0/s'], () => 'about the centre of mass', st => opsSeries(st, (fr, j) => opsOm(fr, j) * 57.2958)],
 ];
 Object.assign(OPS_PANELS, {
   s1: { update() {} }, s2: { update() {} }, s3: { update() {} }, s4: { update() {} },          // section labels: nothing to update
-  kp: { wide: true, update(st) {
-    OPS_KP.forEach(([, col, val, sub, trend], k) => {
-      if (!st) { opsSet(`kp${k}v`, '—'); opsSet(`kp${k}u`, ''); opsSet(`kp${k}s`, ''); opsCtx(`kp${k}c`); return; }
-      const [v, u] = val(st); opsSet(`kp${k}v`, v); opsSet(`kp${k}u`, u); opsSet(`kp${k}s`, sub(st)); opsSpark(`kp${k}c`, trend(st), col);
-    });
-  } },
   ph: { wide: true, update(st) {                                          // the flight as one bar: each phase that has started, and the playhead
     if (!st) { opsSet('opsPhN', '—'); opsSet('opsPhT', OPS_WAIT); opsHtml('opsRail', ''); return; }
     const { ph } = opsPh(st), r = st.s.ep.result, tot = st.fr.length * FDT, t = st.i * FDT, starts = opsStarts(st), cols = ['#3b5a85', '#f2c46b', '#38c7ff', '#6ee7a8', st.done && r.end !== 'rest' ? OPS_BAD : OPS_GOOD];
@@ -4272,27 +4279,123 @@ Object.assign(OPS_PANELS, {
     opsCombo('opsPw', S, st.fr.length * FDT); opsLegend('opsPwL', S);
   } },
 });
-OPS_LAYOUTS.deck = { label: 'Deck', dense: true,
-  areas: ['kp kp kp kp kp kp kp kp kp kp kp kp', 'ph ph ph ph ph ph ph ph ph ph ph ph', 's1 s1 s1 s1 s1 s1 s1 s1 s1 s1 s1 s1',
-    'vw vw vw vw vw fp fp fp fp sy sy sy', 'vw vw vw vw vw gd gd gd gd mg mg mg', 's2 s2 s2 s2 s2 s2 s2 s2 s2 s2 s2 s2', 'tg tg tg tg ac ac ac ac pw pw pw pw',
-    's3 s3 s3 s3 s3 s3 s3 s3 s3 s3 s3 s3', 'nn nn nn nn de de de at at pr pr pr', 's4 s4 s4 s4 s4 s4 s4 s4 s4 s4 s4 s4', 'ts ts ts ts ts rw rw rw lp lp lp lp',
-    'sq sq sq sq sc sc sc en en en sim sim', 'lg lg lg lg rc rc rc tr tr tr pf pf'],
-  heights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '250px', 'auto', '262px', 'auto', '272px', '200px', '240px'],
-  show: ['kp kp kp kp kp kp kp kp kp kp kp kp', 'ph ph ph ph ph ph ph ph ph ph ph ph', 's1 s1 s1 s1 s1 s1 s1 s1 s1 s1 s1 s1',
-    'vw vw vw vw vw fp fp fp fp sy sy sy', 'vw vw vw vw vw gd gd gd gd mg mg mg', 's2 s2 s2 s2 s2 s2 s2 s2 s2 s2 s2 s2', 'tg tg tg tg ac ac ac ac pw pw pw pw',
-    's3 s3 s3 s3 s3 s3 s3 s3 s3 s3 s3 s3', 'nn nn nn nn de de de at at pr pr pr', 's4 s4 s4 s4 s4 s4 s4 s4 s4 s4 s4 s4', 'ts ts ts ts ts rw rw rw lp lp lp lp',
-    'sq sq sq sq sc sc sc en en en sim sim', 'lg lg lg lg lg lg rc rc rc rc rc rc'],
-  showHeights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '250px', 'auto', '262px', 'auto', '272px', '200px', '240px'] };
+// ---- panels that fill the extra room of wide screens: Forces, Energy, Reward history, Flight so far, All parameters, Landing scatter
+function opsRewardCum(st) {                                               // running total of the reward terms, one number per frame, extended as the flight goes on
+  const ep = st.s.ep, c = ep._rwc || (ep._rwc = []);
+  for (let j = c.length; j <= st.i; j++) { const t = st.fr[j].t; let sum = 0; if (t) for (const k in t) sum += t[k]; c.push((j ? c[j - 1] : 0) + sum); }
+  return c;
+}
+function opsStats(st) {                                                   // peaks and counts over the flight so far
+  const { fr, i } = st, S = { ign: 0, burn: 0, q: 0, qAt: 0, load: 0, thr: 0, tilt: 0, spin: 0, side: 0, fall: 0, gim: 0, fin: 0, rcsA: 0, rcsB: 0 };
+  let on0 = false, a0 = false, b0 = false;
+  for (let j = 0; j <= i; j++) {
+    const f = fr[j], v = opsVel(fr, j), on = (f.thr || 0) > 0, a = Math.abs(f.r1 || 0) > 0.1, b = Math.abs(f.r2 || 0) > 0.1;
+    if (on && !on0) S.ign++; if (on) S.burn += FDT; on0 = on;
+    if (a && !a0) S.rcsA++; if (b && !b0) S.rcsB++; a0 = a; b0 = b;
+    if ((f.q || 0) > S.q) { S.q = f.q; S.qAt = f.y - PAD_ALT; }
+    S.load = Math.max(S.load, Math.hypot(f.ax || 0, f.ay || 0) / TL.g); S.thr = Math.max(S.thr, f.thr || 0); S.tilt = Math.max(S.tilt, Math.abs(f.a));
+    S.spin = Math.max(S.spin, Math.abs(opsOm(fr, j))); S.side = Math.max(S.side, Math.abs(v.vx)); S.fall = Math.max(S.fall, -v.vy); S.gim = Math.max(S.gim, Math.abs(f.g || 0)); S.fin = Math.max(S.fin, Math.abs(f.f || 0));
+  }
+  return S;
+}
+Object.assign(OPS_PANELS, {
+  fo: { wide: true, update(st) {
+    if (!st) { opsNote('opsFo', OPS_WAIT); opsHtml('opsFoL', ''); return; }
+    const g = TL.g, S = [{ label: 'thrust', unit: 'kN', col: '#ffb347', dash: [], axis: 'L', pts: opsPts(st, (fr, j) => (fr[j].thr || 0) / 1000) },
+      { label: 'air drag', unit: 'kN', col: '#38c7ff', dash: [7, 4], axis: 'L', pts: opsPts(st, (fr, j) => (fr[j].dr || 0) / 1000) },
+      { label: 'weight', unit: 'kN', col: '#cfe3ff', dash: [2, 3], axis: 'L', pts: opsPts(st, (fr, j) => (fr[j].mass || 26000) * g / 1000) },
+      { label: 'load', unit: 'g', col: '#6ee7a8', dash: [8, 3, 2, 3], axis: 'R', pts: opsPts(st, (fr, j) => Math.hypot(fr[j].ax || 0, fr[j].ay || 0) / g) }];
+    opsCombo('opsFo', S, st.fr.length * FDT); opsLegend('opsFoL', S, 'load = every force except gravity, in g');
+  } },
+  ey: { wide: true, update(st) {
+    if (!st) { opsNote('opsEy', OPS_WAIT); opsHtml('opsEyL', ''); return; }
+    const en = (fr, j) => { const v = opsVel(fr, j), m = fr[j].mass || 26000; return { ke: 0.5 * m * (v.vx * v.vx + v.vy * v.vy) / 1e6, pe: m * TL.g * Math.max(0, fr[j].y - PAD_ALT) / 1e6, m }; };
+    const S = [{ label: 'kinetic', unit: 'MJ', col: '#ffb347', dash: [], axis: 'L', pts: opsPts(st, (fr, j) => en(fr, j).ke) },
+      { label: 'potential', unit: 'MJ', col: '#38c7ff', dash: [7, 4], axis: 'L', pts: opsPts(st, (fr, j) => en(fr, j).pe) },
+      { label: 'total', unit: 'MJ', col: '#cfe3ff', dash: [2, 3], axis: 'L', pts: opsPts(st, (fr, j) => { const e = en(fr, j); return e.ke + e.pe; }) },
+      { label: 'mass', unit: 't', col: '#9aa7ff', dash: [8, 3, 2, 3], axis: 'R', pts: opsPts(st, (fr, j) => en(fr, j).m / 1000) }];
+    opsCombo('opsEy', S, st.fr.length * FDT); opsLegend('opsEyL', S);
+  } },
+  rh: { wide: true, update(st) {
+    if (!st) { opsNote('opsRh', OPS_WAIT); opsHtml('opsRhL', ''); return; }
+    const c = opsRewardCum(st), n1 = Math.max(1, Math.round(1 / FDT));
+    const S = [{ label: 'total so far', unit: 'points', col: '#3dd68c', dash: [], axis: 'L', pts: opsPts(st, (fr, j) => c[j]) },
+      { label: 'rate over the last second', unit: 'points/s', col: '#f2c46b', dash: [7, 4], axis: 'R', pts: opsPts(st, (fr, j) => { const j0 = Math.max(0, j - n1); return j > j0 ? (c[j] - c[j0]) / ((j - j0) * FDT) : 0; }) }];
+    opsCombo('opsRh', S, st.fr.length * FDT); opsLegend('opsRhL', S, 'the training reward, summed over the terms in the Reward breakdown');
+  } },
+  fs: { update(st) {
+    if (!st) { opsHtml('opsFs', `<div class="op-empty">${OPS_WAIT}</div>`); return; }
+    const S = opsStats(st), D = 57.2958, used = (st.fr[0].fuel - st.f.fuel) * VEH.budget, row = (k, v) => `<div><span>${k}</span><b>${v}</b></div>`;
+    opsHtml('opsFs', [row('Engine starts', S.ign), row('Burn time', S.burn.toFixed(1) + ' s'), row('Propellant used', Math.round(used).toLocaleString() + ' kg'), row('Peak dynamic pressure', `${(S.q / 1000).toFixed(1)} kPa at ${Math.round(S.qAt)} m`),
+      row('Peak load', S.load.toFixed(1) + ' g'), row('Peak thrust', (S.thr / 1000).toFixed(0) + ' kN'), row('Fastest fall', S.fall.toFixed(0) + ' m/s'), row('Fastest sideways', S.side.toFixed(0) + ' m/s'),
+      row('Largest tilt', (S.tilt * D).toFixed(1) + '°'), row('Fastest spin', (S.spin * D).toFixed(1) + '°/s'), row('Largest gimbal', (S.gim * D).toFixed(1) + '°'), row('Largest fin angle', (S.fin * D).toFixed(0) + '°'),
+      row('RCS A pulses', S.rcsA), row('RCS B pulses', S.rcsB)].join(''));
+  } },
+  pg: { wide: true, update(st) {
+    if (!st) { opsHtml('opsPg', `<div class="op-empty">${OPS_WAIT}</div>`); return; }
+    opsHtml('opsPg', opsParams(st).map(p => `<div><span>${p[1]}</span><b>${p[2]}<i>${p[3]}</i></b></div>`).join(''));
+  } },
+  ls: { update() {                                                        // where this page's finished landings touched down: offset from the pad centre against touchdown speed
+    const { x, w, h } = opsCtx('opsLs'), pts = LANDINGS.filter(p => isFinite(p.v) && isFinite(p.x)), L = 34, R = 8, T = 8, B = 20;
+    const xr = Math.max(30, VEH.zone * 2, ...pts.map(p => Math.abs(p.x)) ) * 1.1, yr = Math.max(6, VEH.soft_speed * 2, ...pts.map(p => p.v)) * 1.1;
+    const px = v => L + (v + xr) / (2 * xr) * (w - L - R), py = v => h - B - v / yr * (h - T - B);
+    x.fillStyle = 'rgba(61,214,140,.14)'; x.fillRect(px(-VEH.zone), py(VEH.soft_speed), px(VEH.zone) - px(-VEH.zone), py(0) - py(VEH.soft_speed));
+    x.strokeStyle = 'rgba(61,214,140,.55)'; x.lineWidth = 1; x.strokeRect(px(-VEH.zone), py(VEH.soft_speed), px(VEH.zone) - px(-VEH.zone), py(0) - py(VEH.soft_speed));
+    x.font = '10px system-ui'; x.fillStyle = '#6d86a8'; x.strokeStyle = '#10294a'; x.textAlign = 'right';
+    for (let k = 0; k <= 4; k++) { const v = yr * k / 4, y = py(v); x.beginPath(); x.moveTo(L, y); x.lineTo(w - R, y); x.stroke(); x.fillText(v.toFixed(v < 10 ? 1 : 0), L - 4, y + 3); }
+    x.textAlign = 'center'; for (let k = 0; k <= 4; k++) { const v = -xr + 2 * xr * k / 4; x.fillText(Math.round(v) + ' m', px(v), h - 5); }
+    pts.forEach(p => { x.fillStyle = p.soft && Math.abs(p.x) <= VEH.zone ? OPS_GOOD : p.ok ? OPS_WARN : OPS_BAD; x.globalAlpha = 0.85; x.beginPath(); x.arc(px(p.x), py(p.v), 3.6, 0, 7); x.fill(); x.globalAlpha = 1; });
+    const good = pts.filter(p => p.soft && Math.abs(p.x) <= VEH.zone).length;
+    opsSet('opsLsN', pts.length ? `${pts.length} landings seen here, ${good} inside the green box (at most ${VEH.soft_speed} m/s, within ${VEH.zone} m of the centre)` : 'no finished landing yet: each one adds a dot, green = a landing');
+  } },
+});
+const OPS_KP_SETS = { 8: ['Altitude', 'Speed', 'Sideways', 'Thrust', 'Propellant', 'Tilt', 'Pad offset', 'Time to go*'],
+  12: ['Altitude', 'Speed', 'Fall speed', 'Sideways', 'Thrust', 'Propellant', 'Mass', 'Dyn. pressure', 'Tilt', 'Spin', 'Pad offset', 'Time to go*'] };
+Object.assign(OPS_PANELS, {
+  kp: { wide: true, init(el, T) {                                         // the tiles are built here because a wide screen shows more of them
+    OPS.kp = (OPS_KP_SETS[T.kpCount] || OPS_KP_SETS[8]).map(n => OPS_KP.find(t => t[0] === n));
+    const box = el.querySelector('.kpi'); box.style.setProperty('--kpn', OPS.kp.length);
+    box.innerHTML = OPS.kp.map((t, k) => `<div><span class="l">${t[0]}</span><span class="v"><b id="kp${k}v">&mdash;</b><i id="kp${k}u"></i></span><span class="s" id="kp${k}s"></span><canvas id="kp${k}c"></canvas></div>`).join('');
+  }, update(st) {
+    (OPS.kp || []).forEach(([, col, val, sub, trend], k) => {
+      if (!st) { opsSet(`kp${k}v`, '—'); opsSet(`kp${k}u`, ''); opsSet(`kp${k}s`, ''); opsCtx(`kp${k}c`); return; }
+      const [v, u] = val(st); opsSet(`kp${k}v`, v); opsSet(`kp${k}u`, u); opsSet(`kp${k}s`, sub(st)); opsSpark(`kp${k}c`, trend(st), col);
+    });
+  } },
+});
+OPS_LAYOUTS.deck = { label: 'Deck', dense: true, tiers: {
+  std: { cols: 12, kpCount: 8,
+    areas: ['kp kp kp kp kp kp kp kp kp kp kp kp', 'ph ph ph ph ph ph ph ph ph ph ph ph', 's1 s1 s1 s1 s1 s1 s1 s1 s1 s1 s1 s1',
+      'vw vw vw vw vw fp fp fp fp sy sy sy', 'vw vw vw vw vw gd gd gd gd mg mg mg', 's2 s2 s2 s2 s2 s2 s2 s2 s2 s2 s2 s2', 'tg tg tg tg ac ac ac ac pw pw pw pw',
+      's3 s3 s3 s3 s3 s3 s3 s3 s3 s3 s3 s3', 'nn nn nn nn de de de at at pr pr pr', 's4 s4 s4 s4 s4 s4 s4 s4 s4 s4 s4 s4', 'ts ts ts ts ts rw rw rw lp lp lp lp',
+      'sq sq sq sq sc sc sc en en en sim sim', 'lg lg lg lg rc rc rc tr tr tr pf pf'],
+    heights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '250px', 'auto', '262px', 'auto', '272px', '200px', '240px'],
+    show: ['kp kp kp kp kp kp kp kp kp kp kp kp', 'ph ph ph ph ph ph ph ph ph ph ph ph', 's1 s1 s1 s1 s1 s1 s1 s1 s1 s1 s1 s1',
+      'vw vw vw vw vw fp fp fp fp sy sy sy', 'vw vw vw vw vw gd gd gd gd mg mg mg', 's2 s2 s2 s2 s2 s2 s2 s2 s2 s2 s2 s2', 'tg tg tg tg ac ac ac ac pw pw pw pw',
+      's3 s3 s3 s3 s3 s3 s3 s3 s3 s3 s3 s3', 'nn nn nn nn de de de at at pr pr pr', 's4 s4 s4 s4 s4 s4 s4 s4 s4 s4 s4 s4', 'ts ts ts ts ts rw rw rw lp lp lp lp',
+      'sq sq sq sq sc sc sc en en en sim sim', 'lg lg lg lg lg lg rc rc rc rc rc rc'],
+    showHeights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '250px', 'auto', '262px', 'auto', '272px', '200px', '240px'] },
+  wide: { cols: 24, kpCount: 12,                                          // from about 1700 px of dock width (a big screen, or a browser zoomed out): twice the columns and the extra panels
+    areas: ['@kp*24', '@ph*24', '@s1*24', '@vw*8 @fp*6 @gd*6 @sy*4', '@vw*8 @ac*6 @pw*6 @mg*4', '@s2*24', '@tg*6 @fo*6 @ey*6 @rh*6', '@s3*24', '@nn*6 @de*4 @at*3 @pr*4 @fs*7',
+      '@s4*24', '@ts*6 @pg*8 @rw*4 @lp*6', '@sq*6 @sc*4 @en*4 @sim*3 @ls*7', '@lg*8 @rc*4 @tr*6 @pf*6'].map(opsExpand),
+    heights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '262px', 'auto', '270px', 'auto', '280px', '220px', '240px'],
+    show: ['@kp*24', '@ph*24', '@s1*24', '@vw*8 @fp*6 @gd*6 @sy*4', '@vw*8 @ac*6 @pw*6 @mg*4', '@s2*24', '@tg*6 @fo*6 @ey*6 @rh*6', '@s3*24', '@nn*6 @de*4 @at*3 @pr*4 @fs*7',
+      '@s4*24', '@ts*6 @pg*8 @rw*4 @lp*6', '@sq*6 @sc*4 @en*4 @sim*3 @ls*7', '@lg*16 @rc*8'].map(opsExpand),
+    showHeights: ['104px', '64px', 'auto', '232px', '232px', 'auto', '262px', 'auto', '270px', 'auto', '280px', '220px', '240px'] } } };
 function opsMarkTabs(key, val) { document.querySelectorAll(`[data-${key}]`).forEach(b => b.classList.toggle('on', b.dataset[key] === val)); }
+const OPS_WIDE_PX = 1700;                                  // this wide (CSS pixels) or wider: the "wide" arrangement, otherwise the standard one
+const opsTier = () => $('opsGrid').parentElement.clientWidth >= OPS_WIDE_PX ? 'wide' : 'std';
+function opsExpand(s) { return s.split(' ').map(t => { const [n, c] = t.slice(1).split('*'); return Array(+c).fill(n).join(' '); }).join(' '); }       // '@kp*3 @vw*2' -> 'kp kp kp vw vw'
 function opsBuildLayout(name) {                            // put the panels of a layout into the grid (the other panels are not built, so they cost nothing)
-  const L = OPS_LAYOUTS[name] || OPS_LAYOUTS.deck, rows = SHOW ? L.show : L.areas, grid = $('opsGrid');
-  OPS.layout = OPS_LAYOUTS[name] ? name : 'deck'; OPS.panels = []; OPS.html = {}; grid.innerHTML = '';
-  grid.style.gridTemplateAreas = rows.map(r => `"${r}"`).join(' '); const hs = SHOW ? L.showHeights : L.heights; grid.className = 'ops-grid' + (L.dense ? ' dense' : '');
+  const L = OPS_LAYOUTS[name] || OPS_LAYOUTS.deck, tier = opsTier(), T = L.tiers[tier] || L.tiers.std, rows = SHOW && T.show ? T.show : T.areas, grid = $('opsGrid');
+  OPS.layout = OPS_LAYOUTS[name] ? name : 'deck'; OPS.tier = tier; OPS.panels = []; OPS.html = {}; grid.innerHTML = '';
+  const hs = SHOW && T.showHeights ? T.showHeights : T.heights; grid.className = 'ops-grid' + (L.dense ? ' dense' : '');
+  grid.style.setProperty('--cols', T.cols || 12); grid.style.gridTemplateAreas = rows.map(r => `"${r}"`).join(' ');
   grid.style.gridTemplateRows = hs ? hs.map(v => v === 'auto' ? 'auto' : `minmax(${v}, auto)`).join(' ') : `repeat(${rows.length}, minmax(196px, auto))`;
   for (const id of [...new Set(rows.join(' ').split(/\s+/))]) {
     const tpl = $('opsT-' + id); if (!tpl || !OPS_PANELS[id]) continue;
     const el = tpl.content.firstElementChild.cloneNode(true); el.style.gridArea = id; if (OPS_PANELS[id].wide) el.classList.add('wide');
-    grid.appendChild(el); OPS.panels.push(id);
+    grid.appendChild(el); OPS.panels.push(id); if (OPS_PANELS[id].init) OPS_PANELS[id].init(el, T);
   }
   opsLayoutButtons(); opsMarkTabs('src', OPS.src); OPS_TABKEYS.forEach(k => opsMarkTabs(k, OPS[k]));
   try { localStorage.setItem('spacexperiment.opslayout', OPS.layout); } catch (e) { /* storage may be blocked */ }
@@ -4417,6 +4520,7 @@ function opsInit() {
   new IntersectionObserver(es => { OPS.vis = es[0].isIntersecting; }, { threshold: 0.02 }).observe($('ops'));
   let saved = 'deck'; try { saved = localStorage.getItem('spacexperiment.opslayout') || 'deck'; } catch (e) { /* storage may be blocked */ }
   opsBuildLayout(OPS_LAYOUTS[saved] ? saved : 'deck');
+  let rz = 0; new ResizeObserver(() => { clearTimeout(rz); rz = setTimeout(() => { if (opsTier() !== OPS.tier) opsBuildLayout(OPS.layout); }, 150); }).observe($('opsGrid').parentElement);
   requestAnimationFrame(opsLoop);
 }
 if (!RECP) opsInit();
