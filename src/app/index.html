@@ -485,7 +485,7 @@
 <template id="opsT-vw"><div class="op"><h3>Live view <span class="seg2 ops-src"><button data-src="cam" class="on">Landing cam</button><button data-src="view">Stage view</button></span></h3>
             <div class="vwbox"><canvas id="opsView"></canvas><div class="vwtag" id="opsVwTag"></div></div></div></template>
 <template id="opsT-nn"><div class="op"><h3>AI neural network <span class="nnst off" id="opsNnSt">NO DATA</span></h3>
-            <div class="nnbox"><canvas id="opsNet" style="height:118px"></canvas></div>
+            <canvas id="opsNet" class="cc" style="min-height:80px"></canvas>
             <div class="nncols" id="opsNnCols"></div><div class="nnnote" id="opsNnNote"></div></div></template>
 <template id="opsT-tr"><div class="op"><h3>Training progress</h3>
             <canvas id="opsTrain" class="cc"></canvas><div class="bar2"><i id="opsTrBar"></i></div><div class="nnnote" id="opsTrInfo">idle</div></div></template>
@@ -4030,7 +4030,7 @@ const OPS_PANELS = {
     opsSet('opsVwTag', OPS.src === 'cam' ? '' : `ALT ${st.h >= 1000 ? (st.h / 1000).toFixed(2) + ' km' : st.h.toFixed(0) + ' m'}  ·  ${st.speed.toFixed(0)} m/s  ·  T+${((st.i + 1) * FDT).toFixed(1)} s`);
   } },
   nn: { update(st) {
-    opsMirror('opsNet', $('minibrain'), false);
+    opsNetDraw(st);
     if (!st) { opsSet('opsNnSt', 'NO DATA'); $('opsNnSt').className = 'nnst off'; opsHtml('opsNnCols', ''); opsSet('opsNnNote', ''); return; }
     opsNetPanel(st);
   } },
@@ -4636,10 +4636,34 @@ function opsOverview(st) {
   for (const id of OPS.panels) { if (!slow && OPS_SLOW.has(id)) continue; try { OPS_PANELS[id].update(st); } catch (e) { console.warn('monitoring ground panel ' + id + ':', e); } }
 }
 
+function opsNetDraw(st) {                                  // the policy network drawn at the panel's own size (taller row = neurons further apart), from the same numbers as the main screen's network
+  const { x, w, h } = opsCtx('opsNet'), n = st && actAt(st.s);
+  if (!n) { opsNote('opsNet', st ? 'no network numbers for this flight' : OPS_WAIT); return; }
+  const d = n.draw, xin = n.x.map(v => Math.tanh(v)), T = 8, B = 8, labIn = w > 560 ? 128 : 12, labOut = w > 440 ? 84 : 16;
+  const X = [labIn, labIn + (w - labIn - labOut) * 0.38, labIn + (w - labIn - labOut) * 0.74, w - labOut], ys = k => ysRange(k, T, h - B), lw = Math.max(0.5, Math.min(1.3, h / 240));
+  edges(x, lw, d.w1, n.ni, d.n1, xin, X[0], X[1], ys(n.ni), ys(d.n1), 70);
+  edges(x, lw, d.w2, d.n1, d.n2, d.h1, X[1], X[2], ys(d.n1), ys(d.n2), 100);
+  edges(x, lw * 1.1, d.w3, d.n2, n.no, d.h2, X[2], X[3], ys(d.n2), ys(n.no), 30);
+  const sp = k => (h - T - B) / k, rIn = Math.max(1.8, Math.min(6, sp(n.ni) * 0.3)), rH = Math.max(1.4, Math.min(4.5, sp(d.n1) * 0.3)), rO = Math.max(4, Math.min(12, sp(n.no) * 0.24));
+  const fIn = Math.max(7, Math.min(11, sp(n.ni) * 0.75));
+  xin.forEach((v, i) => {
+    const y = ys(n.ni)[i]; x.fillStyle = tone(v, 0.25); x.beginPath(); x.arc(X[0], y, rIn, 0, 7); x.fill();
+    if (labIn > 20) { x.fillStyle = '#8fa6c8'; x.font = `${fIn}px system-ui`; x.textAlign = 'right'; x.fillText(IN_NAMES[i] || 'input ' + i, X[0] - rIn - 6, y + fIn * 0.35); }
+  });
+  [[d.h1, 1, d.n1], [d.h2, 2, d.n2]].forEach(([hv, col, cnt]) => hv.forEach((v, i) => {
+    const y = ys(cnt)[i];
+    if (Math.abs(v) > 0.6) { x.fillStyle = tone(v, 0).replace(/[\d.]+\)$/, '0.2)'); x.beginPath(); x.arc(X[col], y, rH * 2.2, 0, 7); x.fill(); }   // glow on strongly firing neurons
+    x.fillStyle = tone(v, 0.15); x.beginPath(); x.arc(X[col], y, rH, 0, 7); x.fill();
+  }));
+  const names = labOut > 40 ? OUT_NAMES : ['thr', 'gim', 'fin', 'A', 'B'];
+  n.m.forEach((v, j) => {
+    const y = ys(n.no)[j]; x.fillStyle = tone(v, 0.2); x.beginPath(); x.arc(X[3], y, rO, 0, 7); x.fill(); x.strokeStyle = '#ffffff55'; x.lineWidth = 1; x.stroke();
+    x.fillStyle = '#8fa6c8'; x.font = `600 ${Math.max(8, Math.min(11, rO))}px system-ui`; x.textAlign = 'left'; x.fillText(names[j] || 'out ' + j, X[3] + rO + 6, y + 4);
+  });
+}
 function opsNetPanel(st) {
   if (!SHOW && !st.s.ep.act && st.s.noAct !== st.s.ep.id) fetchAct(st.s);      // the network's numbers are only sent on request (once per episode; recorded showcase landings have none)
   const n = actAt(st.s), on = $('opsNnSt');
-  if (!miniOpen && !ADM.on) drawMini();                    // the small network picture is only kept fresh by the main screen when its panel is open
   if (!n) { opsSet('opsNnSt', 'NO DATA'); on.className = 'nnst off'; opsHtml('opsNnCols', ''); opsSet('opsNnNote', SHOW ? 'recorded landings carry no network numbers (only the landing itself was saved)' : st.s.noAct === st.s.ep.id ? 'this episode file has no network numbers' : 'loading the network’s numbers…'); return; }
   opsSet('opsNnSt', 'ONLINE'); on.className = 'nnst';
   const ph = physical(n.x), ex = n.exec || n.m, onE = ex[0] > -0.5, rcs = v => Math.abs(v) > 0.1 ? `${v > 0 ? 'right' : 'left'} ${Math.round(Math.abs(v) * 100)}%` : 'off';
