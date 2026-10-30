@@ -198,6 +198,8 @@ def _origin(name: str) -> str:
         return ""
     if "source" in r and "epochs" in r:
         return f"cloned from {str(r['source']).replace('.zip', '')} ({r.get('episodes')} episodes, {r.get('epochs')} epochs)"
+    if r.get("pilot") == "PID":
+        return f"PID test pilot (no network), {r.get('total_steps', '?')} steps flown"
     if "reward" in r:
         return f"PPO run, {r.get('total_steps', '?')} steps requested" + (f", started from {r['init_from']}" if r.get("init_from") else "")
     return ""

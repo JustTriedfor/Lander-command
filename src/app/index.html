@@ -2770,7 +2770,7 @@ async function spModels() {
   try { ckData = (await (await fetch('/api/ckpt/list')).json()).checkpoints || []; } catch (e) { return; }
   const sel = $('sp_init_from'); if (!sel) return;
   const kind = { spacex: 'single', dual: 'dual', pair: 'pair' }[$('f_start_profile').value] || 'single', cur = $('f_init_from').value;
-  const items = [['', 'Nothing (they start blank)']].concat(ckData.filter(c => c.kind === kind).sort((a, b) => ((b.eval ? b.eval.score : -1) - (a.eval ? a.eval.score : -1)) || (b.mtime - a.mtime)).map(c => [c.name, c.name + (c.eval ? ` \u00b7 tested ${Math.round(100 * c.eval.score)}%` : '')]));
+  const items = [['', 'Nothing (they start blank)']].concat(kind === 'single' ? [['PID', 'PID + main-engine fire cue (test pilot, no network: nothing is trained)']] : [], ckData.filter(c => c.kind === kind).sort((a, b) => ((b.eval ? b.eval.score : -1) - (a.eval ? a.eval.score : -1)) || (b.mtime - a.mtime)).map(c => [c.name, c.name + (c.eval ? ` \u00b7 tested ${Math.round(100 * c.eval.score)}%` : '')]));
   sel.innerHTML = items.map(o => `<option value="${esc(o[0])}">${esc(o[1])}</option>`).join('');
   if (items.some(o => o[0] === cur)) sel.value = cur; else { sel.value = ''; if (cur) setField('init_from', ''); }          // a brain of the wrong kind would not fit: drop it
 }

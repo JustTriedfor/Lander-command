@@ -236,6 +236,9 @@ def main():
     C.CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
     C.MODEL_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
+    if args.init_from == "PID":                    # the PID test pilot: no network, nothing to train; it flies the same worlds (src/training/fly_pid.py)
+        from src.training.fly_pid import run_pid
+        return run_pid(args, name, run_dir)
     if C.START_PROFILE == "pair":                  # Dual land with one network per lander: two PPO models on one environment (src/training/pair.py)
         from src.training.pair import run_pair
         C.CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)

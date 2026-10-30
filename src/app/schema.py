@@ -243,13 +243,18 @@ def build_run(params: dict) -> dict:
                             f"lower the base rate, growth or number of environments (max {C.MAX_LEARNING_RATE})"])
     if vals["init_from"] and sweep:
         return dict(errors=["Continue-from-checkpoint works on a shared-policy run: turn the learning-rate sweep off"])
-    if vals["init_from"] and not (C.CHECKPOINT_DIR / f"{vals['init_from']}.zip").exists() and not all((C.CHECKPOINT_DIR / f"{vals['init_from']}_{s}.zip").exists() for s in "AB"):
+    pid = vals["init_from"] == "PID"                                   # the PID test pilot (src/sim/pid_pilot.py): no checkpoint, one lander only
+    if pid and vals["start_profile"] != "spacex":
+        return dict(errors=["The PID test pilot flies one lander: set 'What to fly' to One lander"])
+    if vals["init_from"] and not pid and not (C.CHECKPOINT_DIR / f"{vals['init_from']}.zip").exists() and not all((C.CHECKPOINT_DIR / f"{vals['init_from']}_{s}.zip").exists() for s in "AB"):
         return dict(errors=[f"No checkpoint named {vals['init_from']} (see the Data tab for the list)"])
     if vals["stop_at_level"] >= 0 and vals["stop_at_level"] < vals["start_level"]:
         return dict(errors=["Stop level must be >= start level"])
 
     if vals["tag"] == "_app" and vals["start_profile"] != "spacex":       # the default tag follows the profile, so a dual / pair run does not overwrite the single-lander run
         vals["tag"] = "_" + vals["start_profile"]
+    if pid:                                                             # its own run name, so it never overwrites a training run's logs
+        vals["tag"] += "_pid"
     argv, overrides = [sys.executable, "src/training/train.py"], dict(config={}, reward={})
     ppo = {}
     for f in F:
